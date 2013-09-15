@@ -15,10 +15,13 @@ public class Main {
 			line = br.readLine();
 			board.add(line);
 		} // End while
-
+		GameState firstState = new GameState(board);
+//		
+		AbstractPlayer player = new Player();
+		System.out.pringln(player.play());
 		// Access
 		// char = board.get(row).charAt(col);
 
-		System.out.println("U R R U");
+//		System.out.println("U R R U");
 	}
 }
