@@ -14,7 +14,7 @@ public class GameState {
 	private char playerOnGoal = '+';
 	private char box = '$';
 	private char boxOnGoal = '*';
-	
+	//TODO string with steps from first position to position now
 	private Position positionNow;
 	
 	public GameState(Vector<String> board){
@@ -33,7 +33,7 @@ public class GameState {
 		for (int i = 0; i < state.length; i++) {
 			for (int j = 0; j < state.length; j++) {
 				if(state[i][j] == player ||state[i][j] ==playerOnGoal){
-					positionNow = new Position(i, j);
+					setPositionNow(new Position(i, j));
 				}
 			}
 		}
@@ -44,7 +44,7 @@ public class GameState {
 		for (int i = 0; i < firstState.length; i++) {
 			for (int j = 0; j < firstState.length; j++) {
 				if(firstState[i][j] == player ||firstState[i][j] ==playerOnGoal){
-					positionNow = new Position(i, j);
+					setPositionNow(new Position(i, j));
 				}
 			}
 		}
@@ -56,25 +56,25 @@ public class GameState {
 		
 		if(move == Move.Up){
 			 //TODO Extend for all moves. Make a "positionBeforeX", "positionBeforeY" etc to avoid duplicate code.
-			positionNow = new Position(stateBefore.positionNow.row-1, stateBefore.positionNow.column);
-			if(state[positionNow.row][positionNow.column] == goal){
-				state[positionNow.row][positionNow.column] = playerOnGoal;
+			setPositionNow(new Position(stateBefore.getPositionNow().row-1, stateBefore.getPositionNow().column));
+			if(state[getPositionNow().row][getPositionNow().column] == goal){
+				state[getPositionNow().row][getPositionNow().column] = playerOnGoal;
 			}
-			else if(state[positionNow.row][positionNow.column] == box){
-				state[positionNow.row+1][positionNow.column] = empty;
-				state[positionNow.row][positionNow.column] = player;
-				if(state[positionNow.row-1][positionNow.column] == goal){
-					state[positionNow.row-1][positionNow.column] = boxOnGoal;
+			else if(state[getPositionNow().row][getPositionNow().column] == box){
+				state[getPositionNow().row+1][getPositionNow().column] = empty;
+				state[getPositionNow().row][getPositionNow().column] = player;
+				if(state[getPositionNow().row-1][getPositionNow().column] == goal){
+					state[getPositionNow().row-1][getPositionNow().column] = boxOnGoal;
 				}else{
-					state[positionNow.row-1][positionNow.column] = box;
+					state[getPositionNow().row-1][getPositionNow().column] = box;
 				}
 			}
-			else if(state[positionNow.row][positionNow.column] == boxOnGoal){
+			else if(state[getPositionNow().row][getPositionNow().column] == boxOnGoal){
 				
 			}
-			else if(state[positionNow.row][positionNow.column] == empty){
-				state[positionNow.row+1][positionNow.column] = empty;
-				state[positionNow.row][positionNow.column] = player;
+			else if(state[getPositionNow().row][getPositionNow().column] == empty){
+				state[getPositionNow().row+1][getPositionNow().column] = empty;
+				state[getPositionNow().row][getPositionNow().column] = player;
 			}
 		}	
 		
@@ -91,11 +91,11 @@ public class GameState {
 	}
 	
 	public boolean canGoUp(){
-		char charUp = state[positionNow.row -1][positionNow.column];
+		char charUp = state[getPositionNow().row -1][getPositionNow().column];
 		if(charUp == wall){
 			return false;
 		}
-		char twoCharUp = state[positionNow.row -2][positionNow.column];
+		char twoCharUp = state[getPositionNow().row -2][getPositionNow().column];
 		return ( charUp== empty|| charUp == goal ||
 				((charUp == box || charUp == boxOnGoal) && (twoCharUp == empty|| twoCharUp == goal)));
 	}
@@ -147,6 +147,15 @@ public class GameState {
 		}
 		return copy;
 	}
+	public Position getPositionNow() {
+		return positionNow;
+	}
+	public void setPositionNow(Position positionNow) {
+		this.positionNow = positionNow;
+	}
 	
+	public char[][] getGameBoard(){
+		return state;
+	}
 
 }
