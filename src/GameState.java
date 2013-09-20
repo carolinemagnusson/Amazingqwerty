@@ -4,19 +4,10 @@ import java.util.Vector;
 
 public class GameState {
 	//TODO Create game state board. Array with strings.
-	//Functions for isLegalMove/isMovable(box) etc. PossibleGameStates function
-	private char[][] state;
-	
-	private char wall = '#';
-	private char empty = ' ';
-	private char goal = '.';
-	private char player = '@';
-	private char playerOnGoal = '+';
-	private char box = '$';
-	private char boxOnGoal = '*';
-	
+	//Functions for isLegalMove/isMovable(C.box) etc. PossibleGameStates function
+	public char[][] state;
 	private Position positionNow;
-	
+
 	public GameState(Vector<String> board){
 		//Check longest column size
 		int col = 0;
@@ -32,7 +23,7 @@ public class GameState {
 		}
 		for (int i = 0; i < state.length; i++) {
 			for (int j = 0; j < state.length; j++) {
-				if(state[i][j] == player ||state[i][j] ==playerOnGoal){
+				if(state[i][j] == C.player ||state[i][j] == C.playerOnGoal){
 					positionNow = new Position(i, j);
 				}
 			}
@@ -40,46 +31,45 @@ public class GameState {
 	}
 	public GameState(char[][] firstState){
 		state = firstState;
-		
+
 		for (int i = 0; i < firstState.length; i++) {
 			for (int j = 0; j < firstState.length; j++) {
-				if(firstState[i][j] == player ||firstState[i][j] ==playerOnGoal){
+				if(firstState[i][j] == C.player ||firstState[i][j] == C.playerOnGoal){
 					positionNow = new Position(i, j);
 				}
 			}
 		}
 	}
+
 	public GameState(GameState stateBefore, Move move){
 		char[][] state = copyMatrix(stateBefore.state);
-		
-		
-		
+
 		if(move == Move.Up){
 			 //TODO Extend for all moves. Make a "positionBeforeX", "positionBeforeY" etc to avoid duplicate code.
 			positionNow = new Position(stateBefore.positionNow.row-1, stateBefore.positionNow.column);
-			if(state[positionNow.row][positionNow.column] == goal){
-				state[positionNow.row][positionNow.column] = playerOnGoal;
+			if(state[positionNow.row][positionNow.column] == C.goal){
+				state[positionNow.row][positionNow.column] = C.playerOnGoal;
 			}
-			else if(state[positionNow.row][positionNow.column] == box){
-				state[positionNow.row+1][positionNow.column] = empty;
-				state[positionNow.row][positionNow.column] = player;
-				if(state[positionNow.row-1][positionNow.column] == goal){
-					state[positionNow.row-1][positionNow.column] = boxOnGoal;
+			else if(state[positionNow.row][positionNow.column] == C.box){
+				state[positionNow.row+1][positionNow.column] = C.empty;
+				state[positionNow.row][positionNow.column] = C.player;
+				if(state[positionNow.row-1][positionNow.column] == C.goal){
+					state[positionNow.row-1][positionNow.column] = C.boxOnGoal;
 				}else{
-					state[positionNow.row-1][positionNow.column] = box;
+					state[positionNow.row-1][positionNow.column] = C.box;
 				}
 			}
-			else if(state[positionNow.row][positionNow.column] == boxOnGoal){
-				
+			else if(state[positionNow.row][positionNow.column] == C.boxOnGoal){
+
 			}
-			else if(state[positionNow.row][positionNow.column] == empty){
-				state[positionNow.row+1][positionNow.column] = empty;
-				state[positionNow.row][positionNow.column] = player;
+			else if(state[positionNow.row][positionNow.column] == C.empty){
+				state[positionNow.row+1][positionNow.column] = C.empty;
+				state[positionNow.row][positionNow.column] = C.player;
 			}
-		}	
-		
+		}
+
 	}
-	
+
 	public char getCharAt(int row, int col){
 		return state[row][col];
 	}
@@ -89,28 +79,75 @@ public class GameState {
 	public int getColumns(){
 		return state[0].length;
 	}
-	
-	public boolean canGoUp(){
-		char charUp = state[positionNow.row -1][positionNow.column];
-		if(charUp == wall){
-			return false;
+
+	private boolean canPush(int x, int y) //x and y must be either (-1, 0, +1)
+	{
+		int px = positionNow.row;
+		int py = positionNow.column;
+
+		//check the cell that are going to be pushed
+		{
+			char c = state[py+y][px+x];
+			if(c == C.wall) return false;
 		}
-		char twoCharUp = state[positionNow.row -2][positionNow.column];
-		return ( charUp== empty|| charUp == goal ||
-				((charUp == box || charUp == boxOnGoal) && (twoCharUp == empty|| twoCharUp == goal)));
-	}
-	public boolean canGoDown(){
+
+		//check the cell behind the pushed object
+		{
+			char c = state[py+y*2][px+x*2];
+			if(c == C.wall || c == C.box || c == C.boxOnGoal) return false;
+		}
+
 		return true;
-//		return (state.get(positionNow.row +1 ).charAt(positionNow.column) == empty);
 	}
-	public boolean canGoLeft(){
-		return true;
-//		return (state.get(positionNow.row).charAt(positionNow.column-1) == empty);
+
+	public boolean canPushUp(){
+		return canPush(0, -1);
 	}
-	public boolean canGoRight(){
-		return true;
-//		return (state.get(positionNow.row).charAt(positionNow.column+1) == empty);
+	public boolean canPushDown(){
+		return canPush(0, +1);
 	}
+	public boolean canPushLeft(){
+		return canPush(-1, 0);
+	}
+	public boolean canPushRight(){
+		return canPush(+1, 0);
+	}
+
+	private GameState push(int x, int y) //x and y must be either (-1, 0, +1)
+	{
+		int px = positionNow.column;
+		int py = positionNow.row;
+		char[][] childState = copyMatrix(state);
+
+		//update the cell on the players current postion
+		{
+			char c = childState[py][px];
+			if(c == C.player) childState[py][px] = C.empty;
+			else if(c == C.playerOnGoal ) childState[py][px] = C.goal;
+		}
+
+		//update the cell where the pushed object goes, if there is a pushed object
+		{
+			char c = childState[py+y][px+x];
+			if(c == C.box || c == C.boxOnGoal)
+			{
+				char cc = childState[py+y*2][px+x*2];
+				if(cc == C.empty) childState[py+y*2][px+x*2] = C.box;
+				else if(cc == C.goal) childState[py+y*2][px+x*2] = C.boxOnGoal;
+				//else throw exception invalid push
+			}
+		}
+
+		//update the pushed cell
+		{
+			char c = childState[py+y][px+x];
+			if(c == C.goal) childState[py][px] = C.playerOnGoal;
+			else childState[py][px] = C.player;
+		}
+
+		return new GameState(childState);
+	}
+
 	public GameState goUp(){
 		return null;
 //		char charUp = state[positionNow.row -1][positionNow.column];
@@ -118,12 +155,12 @@ public class GameState {
 //			throw new Exception("Cannot go up");
 //		}
 //		char twoCharUp = state[positionNow.row -2][positionNow.column];
-//		if(charUp== empty){
+//		if(charUp== C.empty){
 //			return new GameState(this, );
 //		}
-//		return 
-//				( charUp== empty|| 
-//				((charUp == box || charUp == boxOnGoal) && (twoCharUp == empty|| twoCharUp == goal)));
+//		return
+//				( charUp== C.empty||
+//				((charUp == C.box || charUp == C.boxOnGoal) && (twoCharUp == C.empty|| twoCharUp == C.goal)));
 	}
 	public GameState goDown(){
 		return null;
@@ -132,14 +169,22 @@ public class GameState {
 		return null;
 	}
 	public GameState goRight(){
+		int c = positionNow.column;
+		int r = positionNow.row;
 		return null;
 	}
-	
+
 	public boolean isWinning(){
+		for(int iy=0; iy<state.length; iy++)
+		{
+			for(int ix=0; ix<state[iy].length; ix++)
+			{
+				if(state[iy][ix] == C.box) return false;
+			}
+		}
 		return true;
 	}
-	
-	
+
 	public static char[][] copyMatrix(char[][] array){
 		char[][] copy = new char[array.length][];
 		for (int i = 0; i < array.length; i++) {
@@ -147,6 +192,9 @@ public class GameState {
 		}
 		return copy;
 	}
-	
 
+	public String toString()
+	{
+		return "";
+	}
 }
