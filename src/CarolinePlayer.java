@@ -38,7 +38,9 @@ public class CarolinePlayer extends AbstractPlayer{
 							heuristic(newState4) + parent.pathCost +1, parent.pathCost+1));
 				
 			}
-			
+		}
+		if (queue.poll().state.isWinning()){
+			//get path to this state and return as a string
 		}
 		
 		
