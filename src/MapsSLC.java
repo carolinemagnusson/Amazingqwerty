@@ -9,6 +9,7 @@ public class MapsSLC
 	{
 		try
 		{
+			Maps = new LinkedList<GameState>();
 			File file = new File("all-slc/test_file.txt");
 			file.createNewFile();
 			File slcFile = new File("all-slc/all.slc");
@@ -29,12 +30,23 @@ public class MapsSLC
 				{
 					//System.err.println(ia);
 					if(list.size() == 0) continue;
-
-					char[][] data = new char[list.size()][list.get(0).length()]; //all maps are rectangular
+					
+					int maxLength = 0;
+					for(String s: list)
+					{
+						if (s.length() > maxLength)
+							maxLength = s.length();
+					}
+						
+					
+					char[][] data = new char[list.size()][maxLength]; //all maps are rectangular
 					int ib = 0;
 					for(String s : list)
 					{
-						data[ib] = s.toCharArray();
+						for(int i = 0; i < s.length(); i++)
+						{
+							data[ib][i] = s.charAt(i);
+						}
 						ib++;
 					}
 

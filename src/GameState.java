@@ -22,7 +22,7 @@ public class GameState {
 			state[i] = board.get(i).toCharArray();
 		}
 		for (int i = 0; i < state.length; i++) {
-			for (int j = 0; j < state.length; j++) {
+			for (int j = 0; j < state[0].length; j++) {
 				if(state[i][j] == C.player ||state[i][j] == C.playerOnGoal){
 					positionNow = new Position(i, j);
 				}
@@ -33,12 +33,21 @@ public class GameState {
 		state = firstState;
 
 		for (int i = 0; i < firstState.length; i++) {
-			for (int j = 0; j < firstState.length; j++) {
+			for (int j = 0; j < firstState[0].length; j++) {
 				if(firstState[i][j] == C.player ||firstState[i][j] == C.playerOnGoal){
 					positionNow = new Position(i, j);
 				}
 			}
 		}
+	}
+	
+	public char[][] getGameBoard()
+	{
+		return state; 
+	}
+	public Position getPositionNow()
+	{
+		return positionNow;
 	}
 
 	public GameState(GameState stateBefore, Move move){
@@ -148,30 +157,17 @@ public class GameState {
 		return new GameState(childState);
 	}
 
-	public GameState goUp(){
-		return null;
-//		char charUp = state[positionNow.row -1][positionNow.column];
-//		if(canGoUp() == false){
-//			throw new Exception("Cannot go up");
-//		}
-//		char twoCharUp = state[positionNow.row -2][positionNow.column];
-//		if(charUp== C.empty){
-//			return new GameState(this, );
-//		}
-//		return
-//				( charUp== C.empty||
-//				((charUp == C.box || charUp == C.boxOnGoal) && (twoCharUp == C.empty|| twoCharUp == C.goal)));
+	public GameState pushUp(){
+		return push(0,-1);
 	}
-	public GameState goDown(){
-		return null;
+	public GameState pushDown(){
+		return push(0,1);
 	}
-	public GameState goLeft(){
-		return null;
+	public GameState pushLeft(){
+		return push(-1,0);
 	}
-	public GameState goRight(){
-		int c = positionNow.column;
-		int r = positionNow.row;
-		return null;
+	public GameState pushRight(){
+		return push(1,0);
 	}
 
 	public boolean isWinning(){
