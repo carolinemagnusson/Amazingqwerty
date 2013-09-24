@@ -91,20 +91,23 @@ public class GameState {
 
 	private boolean canPush(int x, int y) //x and y must be either (-1, 0, +1)
 	{
-		int px = positionNow.row;
-		int py = positionNow.column;
-
+		int py = positionNow.row;
+		int px = positionNow.column;
 		//check the cell that are going to be pushed
+		if(py+y< state.length && px+x < state[0].length)
 		{
 			char c = state[py+y][px+x];
 			if(c == C.wall) return false;
-		}
+		} else 
+			return false;
 
 		//check the cell behind the pushed object
-		{
-			char c = state[py+y*2][px+x*2];
-			if(c == C.wall || c == C.box || c == C.boxOnGoal) return false;
-		}
+//		if(py+y*2< state.length && px+x*2 < state[0].length)
+//		{
+//			char c = state[py+y*2][px+x*2];
+//			if(c == C.wall || c == C.box || c == C.boxOnGoal) return false;
+//		}else
+//			return false;
 
 		return true;
 	}
@@ -126,6 +129,7 @@ public class GameState {
 	{
 		int px = positionNow.column;
 		int py = positionNow.row;
+		System.err.println("Pushing to row = " + (py + y) + " and col " + (px+x));
 		char[][] childState = copyMatrix(state);
 
 		//update the cell on the players current postion

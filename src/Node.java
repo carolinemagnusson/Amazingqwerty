@@ -21,5 +21,10 @@ public class Node implements Comparable<Node>{
 		}
 		return 0;
 	}
+	@Override
+	public String toString()
+	{
+		return state.toString() + " " + score + " " + pathCost;
+	}
 
 }

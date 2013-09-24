@@ -12,8 +12,9 @@ public class Player extends AbstractPlayer {
 		queue.add(startNode);
 		while(!queue.isEmpty() && !queue.peek().state.isWinning()){
 			Node parent = queue.poll();
-
+			System.err.println(queue.size());
 			if (parent.state.canPushUp()){
+				System.err.println("UP");
 				GameState newState = state.pushUp();
 				queue.add(new Node(newState, parent, 
 						heuristic(newState) + parent.pathCost +1, parent.pathCost+1));
@@ -21,27 +22,30 @@ public class Player extends AbstractPlayer {
 			}
 
 			if (parent.state.canPushDown()){
+				System.err.println("DOWN");
 				GameState newState2 = state.pushDown();
 				queue.add(new Node(newState2, parent, 
 						heuristic(newState2) + parent.pathCost +1, parent.pathCost+1));
 
 			}
 			if (parent.state.canPushLeft()){
+				System.err.println("LEFT");
 				GameState newState3 = state.pushLeft();
 				queue.add(new Node(newState3, parent, 
 						heuristic(newState3) + parent.pathCost +1, parent.pathCost+1));
 
 			}
 			if (parent.state.canPushRight()){
+				System.err.println("RIGHT");
 				GameState newState4 = state.pushRight();
 				queue.add(new Node(newState4, parent, 
 						heuristic(newState4) + parent.pathCost +1, parent.pathCost+1));
 
 			}
 		}
-		if (queue.peek().state.isWinning()){
-			return makePathString(queue.peek());
-		} 
+//		if (queue.peek().state.isWinning()){
+//			return makePathString(queue.peek());
+//		} 
 		return "";
 
 
