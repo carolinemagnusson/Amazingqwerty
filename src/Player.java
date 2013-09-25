@@ -15,52 +15,110 @@ public class Player extends AbstractPlayer {
 		
 		queue.add(startNode);
 		while(!queue.isEmpty()){
+			
 			if (queue.peek().state.isWinning()){
 				System.err.println(queue.peek().state.toString());
 				return makePathString(queue.peek());
 			} 
+//			System.err.println("The state has heuristic: " + queue.peek().score);
+//			System.err.println(queue.peek().state.toString());
 			System.err.println("Loopcount " + counter);
 			Node parent = queue.poll();
 			if (visitedStates.containsKey(parent.toString())){
 				continue;
 			}
+//			GameState riskPositions = markUnsafePositions(parent.state);
 			visitedStates.put(parent.toString(), parent);
-			System.err.println(parent.toString());
+//			System.err.println(parent.toString());
 			if (parent.state.canPushUp()){
-				System.err.println("UP");
+//				System.err.println("UP");
 				GameState newState = parent.state.pushUp();
-
-				queue.add(new Node(newState, parent, 
-						heuristic(newState) + parent.pathCost +1, parent.pathCost+1));
-
+				//Check that, if box moved to unsafe place, it will not be added to the queue.
+				if(newState.isLastMovePush()){
+					int boxY = newState.getPositionNow().row+1;
+					int boxX = newState.getPositionNow().column;
+					if(safePosition(newState, boxX, boxY)){
+						queue.add(new Node(newState, parent, 
+								heuristic(newState) + parent.pathCost +1, parent.pathCost+1));
+					}
+				}else{
+					queue.add(new Node(newState, parent, 
+							heuristic(newState) + parent.pathCost +1, parent.pathCost+1));
+				}
 			}
 
 			if (parent.state.canPushDown()){
-				System.err.println("DOWN");
+//				System.err.println("DOWN");
 				GameState newState2 = parent.state.pushDown();
-				queue.add(new Node(newState2, parent, 
-						heuristic(newState2) + parent.pathCost +1, parent.pathCost+1));
+				if(newState2.isLastMovePush()){
+					int boxY = newState2.getPositionNow().row-1;
+					int boxX = newState2.getPositionNow().column;
+					if(safePosition(newState2, boxX, boxY)){
+							queue.add(new Node(newState2, parent, 
+									heuristic(newState2) + parent.pathCost +1, parent.pathCost+1));
+					}
+				}else{
+					queue.add(new Node(newState2, parent, 
+							heuristic(newState2) + parent.pathCost +1, parent.pathCost+1));
+				}
 
 			}
 			if (parent.state.canPushLeft()){
-				System.err.println("LEFT");
+//				System.err.println("LEFT");
 				GameState newState3 = parent.state.pushLeft();
-				queue.add(new Node(newState3, parent, 
-						heuristic(newState3) + parent.pathCost +1, parent.pathCost+1));
+				if(newState3.isLastMovePush()){
+					int boxY = newState3.getPositionNow().row;
+					int boxX = newState3.getPositionNow().column-1;
+					if(safePosition(newState3, boxX, boxY)){
+						queue.add(new Node(newState3, parent, 
+								heuristic(newState3) + parent.pathCost +1, parent.pathCost+1));
+					}
+				}else{
+					queue.add(new Node(newState3, parent, 
+							heuristic(newState3) + parent.pathCost +1, parent.pathCost+1));
+				}
 
 			}
 			if (parent.state.canPushRight()){
-				System.err.println("RIGHT");
+//				System.err.println("RIGHT");
 				GameState newState4 = parent.state.pushRight();
-				queue.add(new Node(newState4, parent, 
-						heuristic(newState4) + parent.pathCost +1, parent.pathCost+1));
-
+				if(newState4.isLastMovePush()){
+					int boxY = newState4.getPositionNow().row;
+					int boxX = newState4.getPositionNow().column+1;
+					if(safePosition(newState4, boxX, boxY)){
+						queue.add(new Node(newState4, parent, 
+								heuristic(newState4) + parent.pathCost +1, parent.pathCost+1));
+					}
+				}else{
+					queue.add(new Node(newState4, parent, 
+							heuristic(newState4) + parent.pathCost +1, parent.pathCost+1));
+				}
 			}
 			counter++;
 		}
+		System.err.println("no path found");
 		return "";
+		
 
-
+	}
+	
+	//TODO Improve so it checks for more than just corners
+	private boolean safePosition(GameState state, int row, int col) {
+			// if corner
+			// if upper corner
+			if (state.getCharAt(row - 1, col) == '#') {
+				if (state.getCharAt(row, col - 1) == '#' || state.getCharAt(row, col + 1) == '#') {
+					return false;
+				}
+			}
+			// if lower corner
+			if (state.getCharAt(row + 1, col) == '#') {
+				if (state.getCharAt(row, col - 1) == '#' || state.getCharAt(row, col + 1) == '#') {
+					return false;
+				}
+			}
+		return true;
+		
 	}
 	
 	// Marks all corners as X and spaces between 2 corners and a wall as £ 
@@ -73,7 +131,8 @@ public class Player extends AbstractPlayer {
 		{
 			for(int j = 0; j < arr[0].length; j++)
 			{
-				if (arr[i][j] == '#' &&  (i + 1) < arr.length && arr[i + 1][j] == '#' && (j + 1) < arr[0].length  && arr[i][j + 1] == '#' )
+				if (arr[i][j] == '#' &&  (i + 1) < arr.length && arr[i + 1][j] == '#' && 
+						(j + 1) < arr[0].length  && arr[i][j + 1] == '#' )
 				{
 					arr[i][j] = 'X';
 				}
@@ -99,7 +158,7 @@ public class Player extends AbstractPlayer {
 
 			tmp = tmp.parent;
 		}
-		return sb.toString();
+		return sb.reverse().toString();
 		
 	}
 
@@ -123,15 +182,18 @@ public class Player extends AbstractPlayer {
 		if(goals.isEmpty() || boxes.isEmpty()){
 			return heur;
 		}
-		System.out.println(goals.size());
-		System.out.println(boxes.size());
-		//TODO check the box, goal distance between the box and goal closest to each other.
-//		for (int i = 0; i < goals.size(); i++) {
-//			heur += distance(goals.get(i), boxes.get(i));
-//		}
-//		for (int i = 0; i < boxes.size(); i++) {
-//			heur += distance(state.getPositionNow(),boxes.get(i));
-//		}
+		if(state.isWinning()){
+			return Integer.MAX_VALUE;
+		}
+		if(state.isLastMovePush()){
+			return heur += 500;
+		}
+		for (int i = 0; i < goals.size(); i++) {
+			for (int j = 0; j < boxes.size(); j++) {
+				heur += distance(goals.get(i), boxes.get(j));
+				heur += 40*distance(boxes.get(j), state.getPositionNow());
+			}
+		}
 		return heur;
 	}
 
@@ -153,8 +215,6 @@ public class Player extends AbstractPlayer {
 	}
 	private static ArrayList<Position> findBoxes(GameState aState){
 		ArrayList<Position> pos = new ArrayList<Position>();
-		System.out.println("row: " +aState.getRows());
-		System.out.println("col: " +aState.getColumns());
 		for (int i = 0; i < aState.getRows(); i++) {
 			for (int j = 0; j < aState.getColumns(); j++) {
 				if(aState.getCharAt(i, j) == C.box){ 

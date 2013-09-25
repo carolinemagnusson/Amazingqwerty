@@ -29,7 +29,11 @@ public class Main {
 				}
 				System.err.println();
 			}
-			player.play(gs);
+			String path = player.play(gs);
+			if(path.equals("")){ //TODO kolla vad kattis vill ha
+				System.out.println("No path");
+			}
+			System.out.println(path);
 		}
 		//System.out.println(player.play(firstState));
 		// Access

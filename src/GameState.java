@@ -7,6 +7,7 @@ public class GameState {
 	//Functions for isLegalMove/isMovable(C.box) etc. PossibleGameStates function
 	public char[][] state;
 	private Position positionNow;
+	private boolean lastMovePushMove;
 
 	public GameState(Vector<String> board){
 		//Check longest column size
@@ -94,22 +95,30 @@ public class GameState {
 		int py = positionNow.row;
 		int px = positionNow.column;
 		//check the cell that are going to be pushed
-		if(py+y< state.length && px+x < state[0].length)
-		{
+		if(py+y< getRows() && px+x < getColumns()){
 			char c = state[py+y][px+x];
-			if(c == C.wall) return false;
-		} else 
+			if(c == C.wall) {
+				return false;
+			}
+			else if (c == C.empty|| c == C.goal){
+				return true;
+			}
+		} else {
 			return false;
+		}			
 
 		//check the cell behind the pushed object
-//		if(py+y*2< state.length && px+x*2 < state[0].length)
-//		{
-//			char c = state[py+y*2][px+x*2];
-//			if(c == C.wall || c == C.box || c == C.boxOnGoal) return false;
-//		}else
-//			return false;
-
-		return true;
+		if(py+y*2< state.length && px+x*2 < state[0].length){
+			char c = state[py+y*2][px+x*2];
+			if(c == C.wall || c == C.box || c == C.boxOnGoal){
+				return false;
+			}
+			else if(c==C.empty|| c ==C.goal){
+				return true;
+			}			
+		}
+		
+		return false;
 	}
 
 	public boolean canPushUp(){
@@ -129,7 +138,7 @@ public class GameState {
 	{
 		int px = positionNow.column;
 		int py = positionNow.row;
-		System.err.println("Pushing to row = " + (py + y) + " and col " + (px+x));
+//		System.err.println("Pushing to row = " + (py + y) + " and col " + (px+x));
 		char[][] childState = copyMatrix(state);
 
 		//update the cell on the players current postion
@@ -144,16 +153,28 @@ public class GameState {
 		//update the cell where the pushed object goes, if there is a pushed object
 		{
 			char c = childState[py+y][px+x];
-			if(c == C.box || c == C.boxOnGoal)
-			{
+			if(c == C.box || c == C.boxOnGoal){
+				lastMovePushMove = true;
 				char cc = childState[py+y*2][px+x*2];
 				if(cc == C.empty){
 					childState[py+y*2][px+x*2] = C.box;
+					
 				}
 				else if(cc == C.goal){
 					childState[py+y*2][px+x*2] = C.boxOnGoal;
+					
+				}
+				if(c == C.boxOnGoal){
+					childState[py+y][px+x] = C.goal;
+				} else if(c== C.box){
+					childState[py+y][px+x] = C.empty;
+				}else{
+					System.err.println("Wrong in push1, gamestate");
 				}
 				//else throw exception invalid push
+			}
+			else{
+				lastMovePushMove = false;
 			}
 		}
 
@@ -163,7 +184,12 @@ public class GameState {
 			if(c == C.goal) {
 				childState[py+y][px+x] = C.playerOnGoal;
 			}
-			else childState[py+y][px+x] = C.player;
+			else if (c== C.empty){
+				childState[py+y][px+x] = C.player;
+			}
+			else{
+				System.err.println("Wrong in push2, gamestate");
+			}
 		}
 		GameState newState = new GameState(childState);
 		newState.positionNow.row = py + y;
@@ -202,7 +228,9 @@ public class GameState {
 		}
 		return copy;
 	}
-
+	public boolean isLastMovePush(){
+		return lastMovePushMove;
+	}
 	@Override
 	public String toString()
 	{
