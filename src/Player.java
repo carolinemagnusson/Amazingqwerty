@@ -12,6 +12,7 @@ public class Player extends AbstractPlayer {
 		queue = new PriorityQueue<Node>();
 
 		Node startNode = new Node(state, null, 0, heuristic(state));
+		
 		queue.add(startNode);
 		while(!queue.isEmpty()){
 			if (queue.peek().state.isWinning()){
@@ -20,13 +21,15 @@ public class Player extends AbstractPlayer {
 			} 
 			System.err.println("Loopcount " + counter);
 			Node parent = queue.poll();
-			if (visitedStates.containsKey(parent.toString()))
+			if (visitedStates.containsKey(parent.toString())){
 				continue;
+			}
 			visitedStates.put(parent.toString(), parent);
 			System.err.println(parent.toString());
 			if (parent.state.canPushUp()){
 				System.err.println("UP");
 				GameState newState = parent.state.pushUp();
+
 				queue.add(new Node(newState, parent, 
 						heuristic(newState) + parent.pathCost +1, parent.pathCost+1));
 
@@ -117,6 +120,11 @@ public class Player extends AbstractPlayer {
 		ArrayList<Position> goals = findGoal(state);
 		ArrayList<Position> boxes = findBoxes(state);
 		double heur = 0;
+		if(goals.isEmpty() || boxes.isEmpty()){
+			return heur;
+		}
+		System.out.println(goals.size());
+		System.out.println(boxes.size());
 		//TODO check the box, goal distance between the box and goal closest to each other.
 //		for (int i = 0; i < goals.size(); i++) {
 //			heur += distance(goals.get(i), boxes.get(i));
@@ -136,7 +144,7 @@ public class Player extends AbstractPlayer {
 		ArrayList<Position> pos = new ArrayList<Position>();
 		for (int i = 0; i < aState.getRows(); i++) {
 			for (int j = 0; j < aState.getColumns(); j++) {
-				if(aState.getGameBoard()[i][j] == '.'||aState.getGameBoard()[i][j] == '+'){ //change so const is used
+				if(aState.getCharAt(i, j) == C.goal||aState.getCharAt(i, j) == C.playerOnGoal){ 
 					pos.add(new Position(i, j));
 				}
 			}
@@ -145,9 +153,11 @@ public class Player extends AbstractPlayer {
 	}
 	private static ArrayList<Position> findBoxes(GameState aState){
 		ArrayList<Position> pos = new ArrayList<Position>();
+		System.out.println("row: " +aState.getRows());
+		System.out.println("col: " +aState.getColumns());
 		for (int i = 0; i < aState.getRows(); i++) {
 			for (int j = 0; j < aState.getColumns(); j++) {
-				if(aState.getGameBoard()[i][j] == '$'){ //change to const
+				if(aState.getCharAt(i, j) == C.box){ 
 					pos.add(new Position(i, j));
 				}
 			}
