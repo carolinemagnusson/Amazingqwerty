@@ -135,8 +135,10 @@ public class GameState {
 		//update the cell on the players current postion
 		{
 			char c = childState[py][px];
-			if(c == C.player) childState[py][px] = C.empty;
-			else if(c == C.playerOnGoal ) childState[py][px] = C.goal;
+			if(c == C.player) 
+				childState[py][px] = C.empty;
+			else if(c == C.playerOnGoal ) 
+				childState[py][px] = C.goal;
 		}
 
 		//update the cell where the pushed object goes, if there is a pushed object
@@ -154,10 +156,12 @@ public class GameState {
 		//update the pushed cell
 		{
 			char c = childState[py+y][px+x];
-			if(c == C.goal) childState[py][px] = C.playerOnGoal;
-			else childState[py][px] = C.player;
+			if(c == C.goal) childState[py+y][px+x] = C.playerOnGoal;
+			else childState[py+y][px+x] = C.player;
 		}
 
+		positionNow.row = py + y;
+		positionNow.column = px + x;
 		return new GameState(childState);
 	}
 
@@ -195,6 +199,15 @@ public class GameState {
 
 	public String toString()
 	{
-		return "";
+		String ret = "";
+		for(int i = 0 ; i < state.length; i++)
+		{
+			for (int j = 0 ; j < state[0].length; j++)
+			{
+				ret += state[i][j];
+			}
+			ret += "\n";
+		}
+		return ret;
 	}
 }

@@ -1,18 +1,25 @@
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.PriorityQueue;
 
 public class Player extends AbstractPlayer {
-
+	HashMap<String,Node> visitedStates = new HashMap<String,Node>();
+	int counter = 0;
 	PriorityQueue<Node> queue;
 	@Override
 	public String play(GameState state) {
+		
 		queue = new PriorityQueue<Node>();
 
 		Node startNode = new Node(state, null, 0, heuristic(state));
 		queue.add(startNode);
 		while(!queue.isEmpty() && !queue.peek().state.isWinning()){
+			System.err.println("Loopcount " + counter);
 			Node parent = queue.poll();
-			System.err.println(queue.size());
+			if (visitedStates.containsKey(parent.toString()))
+				continue;
+			visitedStates.put(parent.toString(), parent);
+			System.err.println(parent.toString());
 			if (parent.state.canPushUp()){
 				System.err.println("UP");
 				GameState newState = state.pushUp();
@@ -42,13 +49,34 @@ public class Player extends AbstractPlayer {
 						heuristic(newState4) + parent.pathCost +1, parent.pathCost+1));
 
 			}
+			counter++;
 		}
+		
 //		if (queue.peek().state.isWinning()){
 //			return makePathString(queue.peek());
 //		} 
 		return "";
 
 
+	}
+	
+	// Marks all corners as X and spaces between 2 corners and a wall as £ 
+	//TODO finish
+	private GameState markUnsafePositions(GameState initialState)
+	{
+		
+		char[][] arr = GameState.copyMatrix(initialState.state);
+		for(int i= 0; i < arr.length; i++ )
+		{
+			for(int j = 0; j < arr[0].length; j++)
+			{
+				if (arr[i][j] == '#' &&  (i + 1) < arr.length && arr[i + 1][j] == '#' && (j + 1) < arr[0].length  && arr[i][j + 1] == '#' )
+				{
+					arr[i][j] = 'X';
+				}
+			}
+		}
+		return new GameState(arr);
 	}
 
 	private String makePathString(Node endNode)

@@ -21,7 +21,7 @@ public class Main {
 //		player.play(state)
 		MapsSLC maps = new MapsSLC();
 		GameState gs;
-		for (int i = 0;i<10; i++)
+		for (int i = 0;i<1; i++)
 		{
 			gs = maps.Maps.poll();
 			for(int j = 0; j < gs.getRows(); j++)
