@@ -13,7 +13,11 @@ public class Player extends AbstractPlayer {
 
 		Node startNode = new Node(state, null, 0, heuristic(state));
 		queue.add(startNode);
-		while(!queue.isEmpty() && !queue.peek().state.isWinning()){
+		while(!queue.isEmpty()){
+			if (queue.peek().state.isWinning()){
+				System.err.println(queue.peek().state.toString());
+				return makePathString(queue.peek());
+			} 
 			System.err.println("Loopcount " + counter);
 			Node parent = queue.poll();
 			if (visitedStates.containsKey(parent.toString()))
@@ -22,7 +26,7 @@ public class Player extends AbstractPlayer {
 			System.err.println(parent.toString());
 			if (parent.state.canPushUp()){
 				System.err.println("UP");
-				GameState newState = state.pushUp();
+				GameState newState = parent.state.pushUp();
 				queue.add(new Node(newState, parent, 
 						heuristic(newState) + parent.pathCost +1, parent.pathCost+1));
 
@@ -30,31 +34,27 @@ public class Player extends AbstractPlayer {
 
 			if (parent.state.canPushDown()){
 				System.err.println("DOWN");
-				GameState newState2 = state.pushDown();
+				GameState newState2 = parent.state.pushDown();
 				queue.add(new Node(newState2, parent, 
 						heuristic(newState2) + parent.pathCost +1, parent.pathCost+1));
 
 			}
 			if (parent.state.canPushLeft()){
 				System.err.println("LEFT");
-				GameState newState3 = state.pushLeft();
+				GameState newState3 = parent.state.pushLeft();
 				queue.add(new Node(newState3, parent, 
 						heuristic(newState3) + parent.pathCost +1, parent.pathCost+1));
 
 			}
 			if (parent.state.canPushRight()){
 				System.err.println("RIGHT");
-				GameState newState4 = state.pushRight();
+				GameState newState4 = parent.state.pushRight();
 				queue.add(new Node(newState4, parent, 
 						heuristic(newState4) + parent.pathCost +1, parent.pathCost+1));
 
 			}
 			counter++;
 		}
-		
-//		if (queue.peek().state.isWinning()){
-//			return makePathString(queue.peek());
-//		} 
 		return "";
 
 
@@ -118,12 +118,12 @@ public class Player extends AbstractPlayer {
 		ArrayList<Position> boxes = findBoxes(state);
 		double heur = 0;
 		//TODO check the box, goal distance between the box and goal closest to each other.
-		for (int i = 0; i < goals.size(); i++) {
-			heur += distance(goals.get(i), boxes.get(i));
-		}
-		for (int i = 0; i < boxes.size(); i++) {
-			heur += distance(state.getPositionNow(),boxes.get(i));
-		}
+//		for (int i = 0; i < goals.size(); i++) {
+//			heur += distance(goals.get(i), boxes.get(i));
+//		}
+//		for (int i = 0; i < boxes.size(); i++) {
+//			heur += distance(state.getPositionNow(),boxes.get(i));
+//		}
 		return heur;
 	}
 
