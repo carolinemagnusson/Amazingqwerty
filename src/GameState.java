@@ -50,34 +50,34 @@ public class GameState {
 		return positionNow;
 	}
 
-	public GameState(GameState stateBefore, Move move){
-		char[][] state = copyMatrix(stateBefore.state);
-
-		if(move == Move.Up){
-			 //TODO Extend for all moves. Make a "positionBeforeX", "positionBeforeY" etc to avoid duplicate code.
-			positionNow = new Position(stateBefore.positionNow.row-1, stateBefore.positionNow.column);
-			if(state[positionNow.row][positionNow.column] == C.goal){
-				state[positionNow.row][positionNow.column] = C.playerOnGoal;
-			}
-			else if(state[positionNow.row][positionNow.column] == C.box){
-				state[positionNow.row+1][positionNow.column] = C.empty;
-				state[positionNow.row][positionNow.column] = C.player;
-				if(state[positionNow.row-1][positionNow.column] == C.goal){
-					state[positionNow.row-1][positionNow.column] = C.boxOnGoal;
-				}else{
-					state[positionNow.row-1][positionNow.column] = C.box;
-				}
-			}
-			else if(state[positionNow.row][positionNow.column] == C.boxOnGoal){
-
-			}
-			else if(state[positionNow.row][positionNow.column] == C.empty){
-				state[positionNow.row+1][positionNow.column] = C.empty;
-				state[positionNow.row][positionNow.column] = C.player;
-			}
-		}
-
-	}
+//	public GameState(GameState stateBefore, Move move){
+//		char[][] state = copyMatrix(stateBefore.state);
+//
+//		if(move == Move.Up){
+//			 //TODO Extend for all moves. Make a "positionBeforeX", "positionBeforeY" etc to avoid duplicate code.
+//			positionNow = new Position(stateBefore.positionNow.row-1, stateBefore.positionNow.column);
+//			if(state[positionNow.row][positionNow.column] == C.goal){
+//				state[positionNow.row][positionNow.column] = C.playerOnGoal;
+//			}
+//			else if(state[positionNow.row][positionNow.column] == C.box){
+//				state[positionNow.row+1][positionNow.column] = C.empty;
+//				state[positionNow.row][positionNow.column] = C.player;
+//				if(state[positionNow.row-1][positionNow.column] == C.goal){
+//					state[positionNow.row-1][positionNow.column] = C.boxOnGoal;
+//				}else{
+//					state[positionNow.row-1][positionNow.column] = C.box;
+//				}
+//			}
+//			else if(state[positionNow.row][positionNow.column] == C.boxOnGoal){
+//
+//			}
+//			else if(state[positionNow.row][positionNow.column] == C.empty){
+//				state[positionNow.row+1][positionNow.column] = C.empty;
+//				state[positionNow.row][positionNow.column] = C.player;
+//			}
+//		}
+//
+//	}
 
 	public char getCharAt(int row, int col){
 		return state[row][col];
@@ -147,8 +147,12 @@ public class GameState {
 			if(c == C.box || c == C.boxOnGoal)
 			{
 				char cc = childState[py+y*2][px+x*2];
-				if(cc == C.empty) childState[py+y*2][px+x*2] = C.box;
-				else if(cc == C.goal) childState[py+y*2][px+x*2] = C.boxOnGoal;
+				if(cc == C.empty){
+					childState[py+y*2][px+x*2] = C.box;
+				}
+				else if(cc == C.goal){
+					childState[py+y*2][px+x*2] = C.boxOnGoal;
+				}
 				//else throw exception invalid push
 			}
 		}
@@ -156,7 +160,9 @@ public class GameState {
 		//update the pushed cell
 		{
 			char c = childState[py+y][px+x];
-			if(c == C.goal) childState[py+y][px+x] = C.playerOnGoal;
+			if(c == C.goal) {
+				childState[py+y][px+x] = C.playerOnGoal;
+			}
 			else childState[py+y][px+x] = C.player;
 		}
 		GameState newState = new GameState(childState);
@@ -197,6 +203,7 @@ public class GameState {
 		return copy;
 	}
 
+	@Override
 	public String toString()
 	{
 		String ret = "";
