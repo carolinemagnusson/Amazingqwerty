@@ -159,10 +159,10 @@ public class GameState {
 			if(c == C.goal) childState[py+y][px+x] = C.playerOnGoal;
 			else childState[py+y][px+x] = C.player;
 		}
-
-		positionNow.row = py + y;
-		positionNow.column = px + x;
-		return new GameState(childState);
+		GameState newState = new GameState(childState);
+		newState.positionNow.row = py + y;
+		newState.positionNow.column = px + x;
+		return newState;
 	}
 
 	public GameState pushUp(){
