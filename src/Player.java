@@ -6,11 +6,14 @@ public class Player extends AbstractPlayer {
 	HashMap<String,Node> visitedStates = new HashMap<String,Node>();
 	int counter = 0;
 	PriorityQueue<Node> queue;
+	GameState unsafePosMap;
 	@Override
 	public String play(GameState state) {
 		
 		queue = new PriorityQueue<Node>();
-
+		//Create a map that marks unsafe positions
+		unsafePosMap = markUnsafePositions(state);
+		
 		Node startNode = new Node(state, null, 0, heuristic(state));
 		
 		queue.add(startNode);
@@ -20,8 +23,8 @@ public class Player extends AbstractPlayer {
 				System.err.println(queue.peek().state.toString());
 				return makePathString(queue.peek());
 			} 
-//			System.err.println("The state has heuristic: " + queue.peek().score);
-//			System.err.println(queue.peek().state.toString());
+			System.err.println("The state has heuristic: " + queue.peek().score);
+			System.err.println(queue.peek().state.toString());
 			System.err.println("Loopcount " + counter);
 			Node parent = queue.poll();
 			if (visitedStates.containsKey(parent.toString())){
@@ -37,7 +40,7 @@ public class Player extends AbstractPlayer {
 				if(newState.isLastMovePush()){
 					int boxY = newState.getPositionNow().row+1;
 					int boxX = newState.getPositionNow().column;
-					if(safePosition(newState, boxX, boxY)){
+					if(safePosition(boxX, boxY)){
 						queue.add(new Node(newState, parent, 
 								heuristic(newState) + parent.pathCost +1, parent.pathCost+1));
 					}
@@ -53,7 +56,7 @@ public class Player extends AbstractPlayer {
 				if(newState2.isLastMovePush()){
 					int boxY = newState2.getPositionNow().row-1;
 					int boxX = newState2.getPositionNow().column;
-					if(safePosition(newState2, boxX, boxY)){
+					if(safePosition(boxX, boxY)){
 							queue.add(new Node(newState2, parent, 
 									heuristic(newState2) + parent.pathCost +1, parent.pathCost+1));
 					}
@@ -69,7 +72,7 @@ public class Player extends AbstractPlayer {
 				if(newState3.isLastMovePush()){
 					int boxY = newState3.getPositionNow().row;
 					int boxX = newState3.getPositionNow().column-1;
-					if(safePosition(newState3, boxX, boxY)){
+					if(safePosition(boxX, boxY)){
 						queue.add(new Node(newState3, parent, 
 								heuristic(newState3) + parent.pathCost +1, parent.pathCost+1));
 					}
@@ -85,7 +88,7 @@ public class Player extends AbstractPlayer {
 				if(newState4.isLastMovePush()){
 					int boxY = newState4.getPositionNow().row;
 					int boxX = newState4.getPositionNow().column+1;
-					if(safePosition(newState4, boxX, boxY)){
+					if(safePosition(boxX, boxY)){
 						queue.add(new Node(newState4, parent, 
 								heuristic(newState4) + parent.pathCost +1, parent.pathCost+1));
 					}
@@ -103,41 +106,62 @@ public class Player extends AbstractPlayer {
 	}
 	
 	//TODO Improve so it checks for more than just corners
-	private boolean safePosition(GameState state, int row, int col) {
-			// if corner
-			// if upper corner
-			if (state.getCharAt(row - 1, col) == '#') {
-				if (state.getCharAt(row, col - 1) == '#' || state.getCharAt(row, col + 1) == '#') {
-					return false;
-				}
-			}
-			// if lower corner
-			if (state.getCharAt(row + 1, col) == '#') {
-				if (state.getCharAt(row, col - 1) == '#' || state.getCharAt(row, col + 1) == '#') {
-					return false;
-				}
-			}
-		return true;
+	private boolean safePosition(int row, int col) {
+		if (unsafePosMap.getCharAt(row, col) == 'X'){
+			return false;
+		}else{
+			return true;
+		}
+		
+//			if (state.getCharAt(row - 1, col) == '#') {
+//				if (state.getCharAt(row, col - 1) == '#' || state.getCharAt(row, col + 1) == '#') {
+//					return false;
+//				}
+//			}
+//			// if lower corner
+//			if (state.getCharAt(row + 1, col) == '#') {
+//				if (state.getCharAt(row, col - 1) == '#' || state.getCharAt(row, col + 1) == '#') {
+//					return false;
+//				}
+//			}
+//		return true;
 		
 	}
 	
-	// Marks all corners as X and spaces between 2 corners and a wall as £ 
-	//TODO finish
+	// Marks all corners as X and spaces between 2 corners and a wall as Y 
+	//TODO finish. Have to mark Y. Marking corners is implemented
 	private GameState markUnsafePositions(GameState initialState)
 	{
 		
 		char[][] arr = GameState.copyMatrix(initialState.state);
-		for(int i= 0; i < arr.length; i++ )
-		{
-			for(int j = 0; j < arr[0].length; j++)
-			{
-				if (arr[i][j] == '#' &&  (i + 1) < arr.length && arr[i + 1][j] == '#' && 
-						(j + 1) < arr[0].length  && arr[i][j + 1] == '#' )
-				{
-					arr[i][j] = 'X';
+//		for(int i= 0; i < arr.length; i++ )
+//		{
+//			for(int j = 0; j < arr[0].length; j++)
+//			{
+//				if (arr[i][j] == '#' &&  (i + 1) < arr.length && arr[i + 1][j] == '#' && 
+//						(j + 1) < arr[0].length  && arr[i][j + 1] == '#' )
+//				{
+//					arr[i][j] = 'X';
+//				}
+//			}
+//		}
+		//Note the index used Mark corners with X
+		for (int i = 1; i < arr.length-1; i++) {
+			for (int j = 1; j < arr[0].length-1; j++) {
+				if(arr[i-1][j] == '#'){
+					if(arr[i][j-1] == '#'||arr[i][j+1] == '#'){
+						arr[i][j] = 'X';
+					}
+				}else if(arr[i+1][j] == '#'){
+					if(arr[i][j-1] == '#'||arr[i][j+1] == '#'){
+						arr[i][j] = 'X';
+					}
 				}
 			}
+			
 		}
+//		Mark deadlock walls with 'Y'
+
 		return new GameState(arr);
 	}
 
@@ -186,12 +210,12 @@ public class Player extends AbstractPlayer {
 			return Integer.MAX_VALUE;
 		}
 		if(state.isLastMovePush()){
-			return heur += 500;
+			return heur -= 3;
 		}
 		for (int i = 0; i < goals.size(); i++) {
 			for (int j = 0; j < boxes.size(); j++) {
 				heur += distance(goals.get(i), boxes.get(j));
-				heur += 40*distance(boxes.get(j), state.getPositionNow());
+				heur += 100*distance(boxes.get(j), state.getPositionNow());
 			}
 		}
 		return heur;
