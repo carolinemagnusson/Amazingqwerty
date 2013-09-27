@@ -35,22 +35,23 @@ public class Main {
 		
 		MapsSLC maps = new MapsSLC();
 		GameState gs;
-		for (int i = 0;i<1; i++)
+		
+		for(int i=0; i<1; i++)
 		{
 			gs = maps.Maps.poll();
-			for(int j = 0; j < gs.getRows(); j++)
-			{
-				for (int k = 0; k < gs.getColumns(); k++)
-				{
-					System.err.print(gs.getCharAt(j, k));
-				}
-				System.err.println();
-			}
+			System.err.println("SLC MAP #"+i);
+			System.err.println("rows: " + gs.getRows() + " columns: " + gs.getColumns());
+			System.err.println(gs.toString());
 			String path = player.play(gs);
-			if(path.equals("")){ //TODO kolla vad kattis vill ha
+			
+			if(path.equals(""))
+			{
 				System.out.println("No path");
 			}
-			System.out.println(path);
+			else
+			{
+				System.out.println(path);
+			}
 		}
 	}
 }
