@@ -200,18 +200,22 @@ public class GameState {
 	public boolean isLastMovePush(){
 		return lastMovePushMove;
 	}
+	
 	@Override
 	public String toString()
 	{
-		String ret = "";
-		for(int i = 0 ; i < state.length; i++)
+		String s = "";
+		
+		for(int iy = 0 ; iy < getRows(); iy++)
 		{
-			for (int j = 0 ; j < state[0].length; j++)
+			for (int ix = 0 ; ix < getColumns(); ix++)
 			{
-				ret += state[i][j];
+				char c = state[iy][ix];
+				if(c != 0) s += c;
 			}
-			ret += "\n";
+			s += "\n";
 		}
-		return ret;
+		
+		return s;
 	}
 }
