@@ -23,7 +23,7 @@ public class DanielPlayer2
 		}
 	}
 	
-	HashMap<String, N> visited = new HashMap<String, N>();
+	HashMap<State, N> visited = new HashMap<State, N>();
     Queue<N> queue = new PriorityQueue<N>();
     
     private int h0(State s)
@@ -56,10 +56,10 @@ public class DanielPlayer2
 			N pn = (N)queue.poll(); //parent node
 			expanded++;
 			
-			int limit = 1000;
+			int limit = 10000;
 			if(expanded >= limit)
 				break;
-			if(expanded >= limit - 100)
+			if(expanded >= limit - 50)
 				pn.print();
 			
 			if(pn.state.isWin())
@@ -74,14 +74,12 @@ public class DanielPlayer2
 			
 			for(State cs : c) //child node
 			{
-				/*
 				{
 					if(visited.containsKey(cs))
 						continue;
 					
 					visited.put(cs, null);
 				}
-				*/
 				//cs.Print();
 				
 				N cn = new N();

@@ -312,16 +312,34 @@ public class State
 		}
 	}
 	
-	/*
 	@Override
     public boolean equals(Object b){
-    	P bb = (P)b;
-        return x == bb.x && y == bb.y;
+    	State s = (State)b;
+    	
+    	for(P box : boxes)
+    	{
+    		if(!s.boxes.contains(box))
+    			return false;
+    	}
+    	
+    	//todo some trick with the player?
+        return player.x == s.player.x && player.y == s.player.y;
     }
 	
 	@Override
     public int hashCode(){
-        return x*10000000 + y * 10000;
+    	int hash = 0;
+    	
+    	for(P box : boxes)
+    	{
+    		hash += box.x * 5234544;
+    		hash += box.y * 6463553;
+    	}
+    	
+        hash += player.x * 1000000;
+        hash += player.y * 4000000;
+    	
+    	//todo some trick with the player?
+        return hash;
     }
-    */
 }
