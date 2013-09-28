@@ -120,7 +120,7 @@ public class State
 		if(boxes.contains(p))
 			return p;
 			*/
-			return null;
+			return false;
 	}
 	
 	public boolean CanPush(P p, P d)
