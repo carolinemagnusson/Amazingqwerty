@@ -1,12 +1,19 @@
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.PriorityQueue;
+import java.util.Queue;
+import java.util.Set;
 
 public class State
 {
 	private class N implements Comparable<N>
 	{
-		P p; //position of the greedy player
-		P b; //position that is adjacent to a box, and that is free space
+		P player; //position of the greedy player
+		P besideBox; //position that is adjacent to a box, and that is free space
 		int s;
+		StringBuilder path; // Optional
+		P pushDir; //Needs to recreate path, optional
 
 		@Override
 		public int compareTo(N b)
@@ -25,8 +32,9 @@ public class State
 	public static Set<P> unsafePositions = new HashSet<P>();
 	public P player; //player position
 	public Set<P> boxes = new HashSet<P>();
+	public P pushDirection; //direction that the player push the box. Used for building path
 	private static Set<P> visited;
-
+	
 	public State()
 	{
 	}
@@ -59,8 +67,10 @@ public class State
 					boxes.add(new P(ix, iy));
 				else if(c == C.goal)
 					goals.add(new P(ix, iy));
-				else if(c == C.player)
+				else if(c == C.player){
 					player = new P(ix, iy);
+					pushDirection = new P(0, 0);
+				}
 				else if(c == C.boxOnGoal)
 				{
 					P p = new P(ix, iy);
@@ -107,29 +117,28 @@ public class State
 	}
 	 */
 
-	private static int ManhattanDistance(P a, P b)
+	public static int ManhattanDistance(P a, P b)
 	{
 		return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 	}
 
-	private boolean GreedyDFS(N pn, int depth)
+	private boolean GreedyDFS(N parentNode, int depth)
 	{
-		//pn parent node
 		//returns true if a path was found
 		//returns false if no path was found
 
 		//dont revisit positions
 		{
-			if(visited.contains(pn.p))
+			if(visited.contains(parentNode.player))
 				return false;
 
-			visited.add(pn.p);
+			visited.add(parentNode.player);
 		}
 
 		//System.err.println("Greedy DFS depth:" + depth + " p:" + pn.p.x + "," + pn.p.y + " b:" + pn.b.x + "," + pn.b.y);
 
 		//simple case
-		if(pn.p.x == pn.b.x && pn.p.y == pn.b.y)
+		if(parentNode.player.x == parentNode.besideBox.x && parentNode.player.y == parentNode.besideBox.y)
 		{
 			//System.err.println("greedy path found");
 			return true;
@@ -140,25 +149,25 @@ public class State
 		//add all possible adjacent paths to queue
 		for(P a : adjacent_lrud)
 		{
-			P np = new P(pn.p.x + a.x, pn.p.y + a.y);
+			P newPos = new P(parentNode.player.x + a.x, parentNode.player.y + a.y);
 
-			if(walls.contains(np))
+			if(walls.contains(newPos))
 				continue;
-			if(boxes.contains(np))
+			if(boxes.contains(newPos))
 				continue;
 
-			N cn = new N(); //cn child node
-			cn.p = np;
-			cn.b = pn.b;
-			cn.s = ManhattanDistance(cn.p, cn.b);
-			queue.add(cn);
+			N childNode = new N();
+			childNode.player = newPos;
+			childNode.besideBox = parentNode.besideBox;
+			childNode.s = ManhattanDistance(childNode.player, childNode.besideBox);
+			queue.add(childNode);
 		}
 
 		//fetch best one and recurse
 		while(queue.size() != 0)
 		{
-			N cn = queue.poll();
-			if(GreedyDFS(cn, depth+1))
+			N childNode = queue.poll();
+			if(GreedyDFS(childNode, depth+1))
 			{
 				return true;
 			}
@@ -166,7 +175,68 @@ public class State
 
 		return false;		
 	}
+	
+	//TODO finish
+	// Find path from the position in parentState to the position in nextState
+	//The path is the path from parentstate.player to the position next to the box moved, 
+	//to nextState.player where the player is when the box is moved and the player is on the place where the box were
+	public static String getPath(State nextState, State parentState){
+		Set<P> visited = new HashSet<P>();
+		N first = parentState.new N();
+		first.player = parentState.player;
+		first.besideBox = new P(nextState.player.x -nextState.pushDirection.x, nextState.player.y-nextState.pushDirection.y); 
+		//Pasted from the search above.
+		Queue<N> queue = new PriorityQueue<N>();
+		queue.add(first);
+		while (!queue.isEmpty()) {
+			N pn = queue.poll();
+			P playerBeforePush = new P(nextState.player.x -nextState.pushDirection.x, nextState.player.y-nextState.pushDirection.y);
+			if(playerBeforePush.equals(pn.player)){
+				//Find which direction the box is moved
+				if(!nextState.pushDirection.equals(new P(0,0))){ //if nextState is first state.
+					pn.path.append(nextState.pushDirection);
+				}
+				return pn.path.toString();
+			}
+			for (P a : adjacent_lrud) {
+				P newPos = new P(parentState.player.x + a.x,
+						parentState.player.y + a.y);
 
+				if (walls.contains(newPos))
+					continue;
+				if (parentState.boxes.contains(newPos))
+					continue;
+					
+				N childNode = parentState.new N();
+				childNode.player = newPos;
+				childNode.besideBox = pn.besideBox;
+				childNode.s = ManhattanDistance(childNode.player,childNode.besideBox);
+				childNode.path.append(direction(a));
+				queue.add(childNode);
+				visited.add(newPos);
+			}
+		}
+		return "";
+		
+	}
+	
+	static private String direction(P direction){
+		if(direction.equals(adjacent_lrud[0])){
+			return "L";
+		}
+		else if(direction.equals(adjacent_lrud[1])){
+			return "R";
+		}
+		else if(direction.equals(adjacent_lrud[2])){
+			return "U";
+		}
+		else{
+			System.err.println("Direction func does not work");
+		}
+		return "D";
+	}
+	
+	
 	public void Push(P p, P d)
 	{
 		//p player position
@@ -180,10 +250,10 @@ public class State
 			boxes.remove(pushed);
 			boxes.add(behindPushed);
 		}
-
+		pushDirection = d;
 		player = pushed;
 	}
-
+	//TODO player has to move to the position next to the box
 	public void PossibleBox(Collection<State> c, P box)
 	{
 		//somewhat expensive call
@@ -200,44 +270,50 @@ public class State
 					continue;
 				else if(boxes.contains(ap))
 					continue;
+				else if(unsafePositions.contains(ap))
+					continue;
 
 				if(walls.contains(op))
 					continue;
 				else if(boxes.contains(op))
 					continue;
+				else if(unsafePositions.contains(op))
+					continue;
 			}
 
-			//check if theres a path to the free space next to the box
+			//check if there's a path to the free space next to the box
 			{
 
 				N n = new N();
-				n.b = ap;
-				n.p = player;
+				n.besideBox = ap;
+				n.player = player;
 				visited = new HashSet<P>();
 
+				
 				if(GreedyDFS(n, 0))
 				{
-					State cs = new State();
-					cs.boxes.addAll(boxes);
-					cs.player = player;
-					cs.Push(n.b, new P(-a.x, -a.y));
+					State childState = new State();
+					childState.boxes.addAll(boxes);
+					childState.player = player;
+					childState.Push(n.besideBox, new P(-a.x, -a.y));
 					//cs.Print();
-					c.add(cs);
+					c.add(childState);
 				}
 			}
 
 			//check the other side too
 			{
 				N n = new N();
-				n.b = op;
-				n.p = player;
+				n.besideBox = op;
+				n.player = player;
 				visited = new HashSet<P>();
 
 				if(GreedyDFS(n, 0))
 				{
 					State cs = new State();
 					cs.boxes.addAll(boxes);
-					cs.Push(n.b, a);
+					cs.player = box;
+					cs.Push(n.besideBox, a);
 					//cs.Print();
 					c.add(cs);
 				}
@@ -303,14 +379,14 @@ public class State
 		//for(P box : boxes)
 		{
 			N n = new N();
-			n.p = player;
-			n.b = new P(4, 7);
+			n.player = player;
+			n.besideBox = new P(4, 7);
 			n.s = 0;
 
-			System.err.println("px:" + n.p.x + " py:"+ n.p.y + " bx:" + n.b.x + " by:" + n.b.y);
+			System.err.println("px:" + n.player.x + " py:"+ n.player.y + " bx:" + n.besideBox.x + " by:" + n.besideBox.y);
 			//System.err.println(GreedyDFS(n, player));
 			Collection<State> c = new LinkedList<State>(); //collection
-			PossibleBox(c, n.b);
+			PossibleBox(c, n.besideBox);
 			for(State s : c)
 				s.Print();
 		}
@@ -320,7 +396,7 @@ public class State
 		unsafePositions = unsafePositions();
 	}
 	
-	//TODO Should unsafe positions change when a box is placed on a goal between to corners ??
+	//TODO Should unsafe positions change when a box is placed on a goal between to corners ?? YES!
 	private Set<P> unsafePositions()
 	{
 		Set<P> unsafePositions = new HashSet<P>();
@@ -481,7 +557,7 @@ public class State
 				return false;
 		}
 
-		//todo some trick with the player?
+		//TODO some trick with the player?
 		return player.x == s.player.x && player.y == s.player.y;
 	}
 
@@ -498,7 +574,7 @@ public class State
 		hash += player.x * 1000000;
 		hash += player.y * 4000000;
 
-		//todo some trick with the player?
+		//TODO some trick with the player?
 		return hash;
 	}
 }
