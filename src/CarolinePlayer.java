@@ -1,8 +1,10 @@
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
+import java.util.TreeMap;
 
 public class CarolinePlayer
 {
@@ -27,7 +29,8 @@ public class CarolinePlayer
 		}
 	}
 	
-	HashMap<State, N> visited = new HashMap<State, N>();
+	HashSet<State> visited = new HashSet<State>();
+	Map<Integer, State> visitedNotHashed = new TreeMap<Integer, State>();
     Queue<N> queue = new PriorityQueue<N>();
     
     private int score(State s)
@@ -42,6 +45,7 @@ public class CarolinePlayer
 				}
     		}   			
     	}
+    	//TODO add minus score for box on goal in corner
     	return score;
     }
 	
@@ -60,6 +64,9 @@ public class CarolinePlayer
 		while(queue.size() != 0)
 		{
 			N pn = queue.poll(); //parent node
+			if (queue.isEmpty()){
+				pn.state.printUnsafePositions();
+			}
 			expanded++;
 			
 			int limit = 10000;
@@ -68,12 +75,6 @@ public class CarolinePlayer
 			if(expanded >= limit - 50)
 				pn.print();
 			
-			if(pn.state.isWin())
-			{
-				System.err.println("found solution");
-				buildPath(pn);
-				break;
-			}
 			
 			//expanded all child states
 			Collection<State> c = new LinkedList<State>(); //collection
@@ -81,13 +82,25 @@ public class CarolinePlayer
 			for(State cs : c) //child node
 			{
 				{
-					if(visited.containsKey(cs))
+					if(visited.contains(cs)){
+//						System.err.println("Hashed map already found:");
+//						visitedNotHashed.get(cs.hashCode()).Print();
+//						System.err.println("New state thought to be the same:");
+//						cs.Print();
+//						
 						continue;
-					
-					visited.put(cs, null);
+					}
+//					visitedNotHashed.put(cs.hashCode(), cs);
+					visited.add(cs);
 				}
-				//cs.Print();
 				cs.Print();
+				if(cs.isWin())
+				{
+					System.err.println("found solution");
+					String path = buildPath(pn);
+					System.out.println(path);
+					return;
+				}
 				N cn = new N();
 				cn.state = cs;
 				cn.parent = pn;
@@ -107,6 +120,7 @@ public class CarolinePlayer
 		*/
 		
 		System.err.println("expanded nodes: " + expanded);
+		
 	}
 	//TODO finish this when I can think
 	String buildPath(N endNode){
@@ -120,8 +134,9 @@ public class CarolinePlayer
 	public static void main(String args[])
 	{
 		CarolinePlayer player = new CarolinePlayer();
-		int level = 1;
+		int level = 2;
 		State s = MapsSLC.LoadMap(level);
+		s.printUnsafePositions();
 		System.err.println("SLC MAP #"+level);
 		System.err.println("rows: " + s.rows + " columns: " + s.columns);
 		s.Print();

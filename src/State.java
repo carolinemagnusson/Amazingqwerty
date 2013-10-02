@@ -252,74 +252,73 @@ public class State
 		}
 		pushDirection = d;
 		player = pushed;
+		updateUnsafePositions();
 	}
 	//TODO player has to move to the position next to the box
-	public void PossibleBox(Collection<State> c, P box)
-	{
-		//somewhat expensive call
-
-		//check in which direction the box and be pushed
-		for(P a : adjacent_lu)
+		public void PossibleBox(Collection<State> c, P box)
 		{
-			P ap = new P(box.x + a.x, box.y + a.y); //adjacent position
-			P op = new P(box.x - a.x, box.y - a.y); //opposite position
+			//somewhat expensive call
 
-			//skip all boxes that are not free on both sides
+			//check in which direction the box and be pushed
+			for(P a : adjacent_lu)
 			{
-				if(walls.contains(ap))
-					continue;
-				else if(boxes.contains(ap))
-					continue;
-				else if(unsafePositions.contains(ap))
-					continue;
+				P ap = new P(box.x + a.x, box.y + a.y); //adjacent position
+				P op = new P(box.x - a.x, box.y - a.y); //opposite position
 
-				if(walls.contains(op))
-					continue;
-				else if(boxes.contains(op))
-					continue;
-				else if(unsafePositions.contains(op))
-					continue;
-			}
-
-			//check if there's a path to the free space next to the box
-			{
-
-				N n = new N();
-				n.besideBox = ap;
-				n.player = player;
-				visited = new HashSet<P>();
-
-				
-				if(GreedyDFS(n, 0))
+				//skip all boxes that are not free on both sides
 				{
-					State childState = new State();
-					childState.boxes.addAll(boxes);
-					childState.player = player;
-					childState.Push(n.besideBox, new P(-a.x, -a.y));
-					//cs.Print();
-					c.add(childState);
+					if(walls.contains(ap))
+						continue;
+					else if(boxes.contains(ap))
+						continue;
+
+					if(walls.contains(op))
+						continue;
+					else if(boxes.contains(op))
+						continue;
 				}
-			}
 
-			//check the other side too
-			{
-				N n = new N();
-				n.besideBox = op;
-				n.player = player;
-				visited = new HashSet<P>();
-
-				if(GreedyDFS(n, 0))
+				//check if there's a path to the free space next to the box
 				{
-					State cs = new State();
-					cs.boxes.addAll(boxes);
-					cs.player = box;
-					cs.Push(n.besideBox, a);
-					//cs.Print();
-					c.add(cs);
+					if(!unsafePositions.contains(op)){
+
+						N n = new N();
+						n.besideBox = ap; // the position next to the box that the
+											// player should move to
+						n.player = player;
+						visited = new HashSet<P>();
+
+						if (GreedyDFS(n, 0)) {
+							State childState = new State();
+							childState.boxes.addAll(boxes);
+							childState.player = ap;
+							childState.Push(n.besideBox, new P(-a.x, -a.y));
+							// cs.Print();
+							c.add(childState);
+						}
+					}
+				}
+
+				//check the other side too
+				{
+					if (!unsafePositions.contains(ap)) {
+						N n = new N();
+						n.besideBox = op;
+						n.player = player;
+						visited = new HashSet<P>();
+
+						if (GreedyDFS(n, 0)) {
+							State cs = new State();
+							cs.boxes.addAll(boxes);
+							cs.player = op;
+							cs.Push(n.besideBox, a);
+							// cs.Print();
+							c.add(cs);
+						}
+					}
 				}
 			}
 		}
-	}
 
 	public void PossibleAdvanced(Collection<State> c)
 	{
