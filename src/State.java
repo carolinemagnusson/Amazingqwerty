@@ -396,6 +396,46 @@ public class State
 		unsafePositions = unsafePositions();
 	}
 	
+	//TODO this should also print dynamic deadlocks and otherwise unsafe positions
+	public void printUnsafePositions()
+	{
+		for(int iy=0; iy<rows; iy++)
+		{
+			for(int ix=0; ix<columns; ix++)
+			{
+				P xy = new P(ix, iy);
+				boolean w = walls.contains(xy);
+				boolean b = boxes.contains(xy);
+				boolean g = goals.contains(xy);
+				boolean isUnsafe = unsafePositions.contains(xy);
+				boolean p = xy.x == player.x && xy.y == player.y;
+				if(isUnsafe)
+					System.err.print('X');
+				else
+				{
+					if(w && !b && !g && !p)
+						System.err.print(C.wall);
+					else if(!w && b && !g && !p)
+						System.err.print(C.box);
+					else if(!w && !b && g && !p)
+						System.err.print(C.goal);
+					else if(!w && !b && !g && p)
+						System.err.print(C.player);
+					else if(!w && !b && !g && !p)
+						System.err.print(C.empty);
+					else if(!w && b && g && !p)
+						System.err.print(C.boxOnGoal);
+					else if(!w && !b && g && p)
+						System.err.print(C.playerOnGoal);
+					else
+						System.err.print("?"); //throw exception?
+				}
+
+			}
+			System.err.println();
+		}
+	}
+	
 	//TODO Should unsafe positions change when a box is placed on a goal between to corners ?? YES!
 	private Set<P> unsafePositions()
 	{
@@ -439,7 +479,7 @@ public class State
 		}
 		HashSet<P> tmpSet = new HashSet<P>();
 		HashSet<P> tmpFound = new HashSet<P>();
-		boolean containsGoal = false, foundSecondCorner = false, isOnlyAdjacentToWalls = true;
+		boolean containsGoal = false, foundSecondCorner = false;
 		P tmpP;
 		for (P p : unsafePositions)
 		{
@@ -447,17 +487,13 @@ public class State
 			for(int i = p.x + 1; i < columns; i++)
 			{
 				tmpP = new P(i, p.y);
-				if (goals.contains(tmpP))
+				if (goals.contains(tmpP) && !boxes.contains(tmpP))
 				{
 					containsGoal = true;
 					break;
-				} else if(walls.contains(new P(i,p.y - 1)) && !boxes.contains(tmpP) && !walls.contains(tmpP) && !goals.contains(tmpP))
+				} else if(walls.contains(new P(i,p.y - 1)) && !walls.contains(tmpP))
 					tmpSet.add(tmpP);
-				else
-				{
-					isOnlyAdjacentToWalls = false;
-					break;
-				}
+
 				
 				if (unsafePositions.contains(tmpP))
 				{
@@ -466,28 +502,22 @@ public class State
 				}
 
 			}
-			if(!containsGoal && foundSecondCorner && isOnlyAdjacentToWalls)
+			if(!containsGoal && foundSecondCorner)
 				tmpFound.addAll(tmpSet);
 
 			tmpSet.clear();
 			containsGoal = false;
 			foundSecondCorner = false;
-			isOnlyAdjacentToWalls = true;
 
 			for(int i = p.x + 1; i < columns; i++)
 			{
 				tmpP = new P(i, p.y);
-				if (goals.contains(tmpP))
+				if (goals.contains(tmpP) && !boxes.contains(tmpP))
 				{
 					containsGoal = true;
 					break;
-				} else if(walls.contains(new P(i,p.y + 1)) && !boxes.contains(tmpP) && !walls.contains(tmpP) && !goals.contains(tmpP))
+				} else if(walls.contains(new P(i,p.y + 1)) && !walls.contains(tmpP))
 					tmpSet.add(tmpP);
-				else
-				{
-					isOnlyAdjacentToWalls = false;
-					break;
-				}
 				
 				if (unsafePositions.contains(tmpP))
 				{
@@ -496,29 +526,23 @@ public class State
 				}
 
 			}
-			if(!containsGoal && foundSecondCorner && isOnlyAdjacentToWalls)
+			if(!containsGoal && foundSecondCorner)
 				tmpFound.addAll(tmpSet);
 
 			tmpSet.clear();
 			containsGoal = false;
 			foundSecondCorner = false;
-			isOnlyAdjacentToWalls = true;
 
 			// Check down direction for vertical unsafe states
 			for(int i = p.y + 1; i < rows; i++)
 			{
 				tmpP = new P(p.x, i);
-				if (goals.contains(tmpP))
+				if (goals.contains(tmpP) && !boxes.contains(tmpP))
 				{
 					containsGoal = true;
 					break;
-				} else if(walls.contains(new P(p.x - 1, i)) && !boxes.contains(tmpP) && !walls.contains(tmpP) && !goals.contains(tmpP))
+				} else if(walls.contains(new P(p.x - 1, i)) && !walls.contains(tmpP))
 					tmpSet.add(tmpP);
-				else
-				{
-					isOnlyAdjacentToWalls = false;
-					break;
-				}
 				
 				if (unsafePositions.contains(tmpP))
 				{
@@ -527,13 +551,12 @@ public class State
 				}
 
 			}
-			if(!containsGoal && foundSecondCorner && isOnlyAdjacentToWalls)
+			if(!containsGoal && foundSecondCorner)
 				tmpFound.addAll(tmpSet);
 
 			tmpSet.clear();
 			containsGoal = false;
 			foundSecondCorner = false;
-			isOnlyAdjacentToWalls = true;
 			
 			for(int i = p.y + 1; i < rows; i++)
 			{
@@ -542,13 +565,8 @@ public class State
 				{
 					containsGoal = true;
 					break;
-				} else if(walls.contains(new P(p.x + 1, i)) && !boxes.contains(tmpP) && !walls.contains(tmpP) && !goals.contains(tmpP))
+				} else if(walls.contains(new P(p.x + 1, i)) && !walls.contains(tmpP))
 					tmpSet.add(tmpP);
-				else
-				{
-					isOnlyAdjacentToWalls = false;
-					break;
-				}
 				
 				if (unsafePositions.contains(tmpP))
 				{
@@ -557,19 +575,18 @@ public class State
 				}
 
 			}
-			if(!containsGoal && foundSecondCorner && isOnlyAdjacentToWalls)
+			if(!containsGoal && foundSecondCorner)
 				tmpFound.addAll(tmpSet);
 
 			tmpSet.clear();
 			containsGoal = false;
 			foundSecondCorner = false;
-			isOnlyAdjacentToWalls = true;
 
 
 		}
 		unsafePositions.addAll(tmpFound);
 		return unsafePositions;
-	}
+	}	
 
 	@Override
 	public boolean equals(Object b){
