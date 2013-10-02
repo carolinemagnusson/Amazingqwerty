@@ -82,12 +82,13 @@ public class CarolinePlayer
 			for(State cs : c) //child node
 			{
 				{
+					
 					if(visited.contains(cs)){
 //						System.err.println("Hashed map already found:");
 //						visitedNotHashed.get(cs.hashCode()).Print();
 //						System.err.println("New state thought to be the same:");
 //						cs.Print();
-//						
+
 						continue;
 					}
 //					visitedNotHashed.put(cs.hashCode(), cs);

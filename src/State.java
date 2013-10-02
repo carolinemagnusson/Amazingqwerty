@@ -9,8 +9,8 @@ public class State
 {
 	private class N implements Comparable<N>
 	{
-		P player; //position of the greedy player
-		P besideBox; //position that is adjacent to a box, and that is free space
+		P pA; //position of the greedy player
+		P PB; //position that is adjacent to a box, and that is free space
 		int s;
 		StringBuilder path; // Optional
 		P pushDir; //Needs to recreate path, optional
@@ -121,7 +121,13 @@ public class State
 	{
 		return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 	}
-
+	private boolean GreedyDFSWrapper(P pA, P pB){
+		visited.clear();
+		N first = new N();
+		first.pA = pA;
+		first.PB = pB;
+		return GreedyDFS(first, 0);
+	}
 	private boolean GreedyDFS(N parentNode, int depth)
 	{
 		//returns true if a path was found
@@ -129,16 +135,16 @@ public class State
 
 		//dont revisit positions
 		{
-			if(visited.contains(parentNode.player))
+			if(visited.contains(parentNode.pA))
 				return false;
 
-			visited.add(parentNode.player);
+			visited.add(parentNode.pA);
 		}
 
 		//System.err.println("Greedy DFS depth:" + depth + " p:" + pn.p.x + "," + pn.p.y + " b:" + pn.b.x + "," + pn.b.y);
 
 		//simple case
-		if(parentNode.player.x == parentNode.besideBox.x && parentNode.player.y == parentNode.besideBox.y)
+		if(parentNode.pA.x == parentNode.PB.x && parentNode.pA.y == parentNode.PB.y)
 		{
 			//System.err.println("greedy path found");
 			return true;
@@ -149,7 +155,7 @@ public class State
 		//add all possible adjacent paths to queue
 		for(P a : adjacent_lrud)
 		{
-			P newPos = new P(parentNode.player.x + a.x, parentNode.player.y + a.y);
+			P newPos = new P(parentNode.pA.x + a.x, parentNode.pA.y + a.y);
 
 			if(walls.contains(newPos))
 				continue;
@@ -157,9 +163,9 @@ public class State
 				continue;
 
 			N childNode = new N();
-			childNode.player = newPos;
-			childNode.besideBox = parentNode.besideBox;
-			childNode.s = ManhattanDistance(childNode.player, childNode.besideBox);
+			childNode.pA = newPos;
+			childNode.PB = parentNode.PB;
+			childNode.s = ManhattanDistance(childNode.pA, childNode.PB);
 			queue.add(childNode);
 		}
 
@@ -183,15 +189,15 @@ public class State
 	public static String getPath(State nextState, State parentState){
 		Set<P> visited = new HashSet<P>();
 		N first = parentState.new N();
-		first.player = parentState.player;
-		first.besideBox = new P(nextState.player.x -nextState.pushDirection.x, nextState.player.y-nextState.pushDirection.y); 
+		first.pA = parentState.player;
+		first.PB = new P(nextState.player.x -nextState.pushDirection.x, nextState.player.y-nextState.pushDirection.y); 
 		//Pasted from the search above.
 		Queue<N> queue = new PriorityQueue<N>();
 		queue.add(first);
 		while (!queue.isEmpty()) {
 			N pn = queue.poll();
 			P playerBeforePush = new P(nextState.player.x -nextState.pushDirection.x, nextState.player.y-nextState.pushDirection.y);
-			if(playerBeforePush.equals(pn.player)){
+			if(playerBeforePush.equals(pn.pA)){
 				//Find which direction the box is moved
 				if(!nextState.pushDirection.equals(new P(0,0))){ //if nextState is first state.
 					pn.path.append(nextState.pushDirection);
@@ -208,9 +214,9 @@ public class State
 					continue;
 					
 				N childNode = parentState.new N();
-				childNode.player = newPos;
-				childNode.besideBox = pn.besideBox;
-				childNode.s = ManhattanDistance(childNode.player,childNode.besideBox);
+				childNode.pA = newPos;
+				childNode.PB = pn.PB;
+				childNode.s = ManhattanDistance(childNode.pA,childNode.PB);
 				childNode.path.append(direction(a));
 				queue.add(childNode);
 				visited.add(newPos);
@@ -280,41 +286,47 @@ public class State
 
 				//check if there's a path to the free space next to the box
 				{
-					if(!unsafePositions.contains(op)){
+//					if(!unsafePositions.contains(op)){
 
 						N n = new N();
-						n.besideBox = ap; // the position next to the box that the
+						n.PB = ap; // the position next to the box that the
 											// player should move to
-						n.player = player;
+						n.pA = player;
 						visited = new HashSet<P>();
 
 						if (GreedyDFS(n, 0)) {
 							State childState = new State();
 							childState.boxes.addAll(boxes);
 							childState.player = ap;
-							childState.Push(n.besideBox, new P(-a.x, -a.y));
+							childState.Push(n.PB, new P(-a.x, -a.y));
 							// cs.Print();
-							c.add(childState);
-						}
+//							if(!childState.isDynamicDeadlocks()){
+								c.add(childState);
+//							}
+							
+//						}
 					}
 				}
 
 				//check the other side too
 				{
-					if (!unsafePositions.contains(ap)) {
+//					if (!unsafePositions.contains(ap)) {
 						N n = new N();
-						n.besideBox = op;
-						n.player = player;
+						n.PB = op;
+						n.pA = player;
 						visited = new HashSet<P>();
 
 						if (GreedyDFS(n, 0)) {
 							State cs = new State();
 							cs.boxes.addAll(boxes);
 							cs.player = op;
-							cs.Push(n.besideBox, a);
+							cs.Push(n.PB, a);
 							// cs.Print();
-							c.add(cs);
-						}
+//							if(cs.isDynamicDeadlocks()){
+								c.add(cs);
+//							}
+							
+//						}
 					}
 				}
 			}
@@ -378,14 +390,14 @@ public class State
 		//for(P box : boxes)
 		{
 			N n = new N();
-			n.player = player;
-			n.besideBox = new P(4, 7);
+			n.pA = player;
+			n.PB = new P(4, 7);
 			n.s = 0;
 
-			System.err.println("px:" + n.player.x + " py:"+ n.player.y + " bx:" + n.besideBox.x + " by:" + n.besideBox.y);
+			System.err.println("px:" + n.pA.x + " py:"+ n.pA.y + " bx:" + n.PB.x + " by:" + n.PB.y);
 			//System.err.println(GreedyDFS(n, player));
 			Collection<State> c = new LinkedList<State>(); //collection
-			PossibleBox(c, n.besideBox);
+			PossibleBox(c, n.PB);
 			for(State s : c)
 				s.Print();
 		}
@@ -434,7 +446,48 @@ public class State
 			System.err.println();
 		}
 	}
-	
+	private boolean isDynamicDeadlocks()
+	{
+		P position;
+		for(int i = 0 ; i < this.rows; i++)
+		{
+			for (int j = 0; j < this.columns; j++)
+			{
+				position = new P(j,i);
+				// Top left
+				P p1 = new P(position.x -1, position.y);
+				P p2 = new P(position.x - 1, position.y - 1);
+				P p3 = new P(position.x, position.y - 1);
+				if (boxes.contains(p1) && boxes.contains(p2) && boxes.contains(p3))
+					return true;
+				
+				// Top right
+				p1 = new P(position.x, position.y - 1);
+				p2 = new P(position.x + 1, position.y - 1);
+				p3 = new P(position.x + 1 , position.y);
+				if (boxes.contains(p1) && boxes.contains(p2) && boxes.contains(p3))
+					return true;
+				
+				// Bottom left
+				p1 = new P(position.x - 1, position.y);
+				p2 = new P(position.x -1, position.y + 1);
+				p3 = new P(position.x , position.y + 1);
+				if (boxes.contains(p1) && boxes.contains(p2) && boxes.contains(p3))
+					return true;
+				
+				// Bottom right
+				// Top right
+				p1 = new P(position.x + 1, position.y);
+				p2 = new P(position.x + 1, position.y + 1);
+				p3 = new P(position.x , position.y + 1);
+				if (boxes.contains(p1) && boxes.contains(p2) && boxes.contains(p3))
+					return true;
+				
+				
+			}
+		}
+		return false;
+	}
 	//TODO Should unsafe positions change when a box is placed on a goal between to corners ?? YES!
 	private Set<P> unsafePositions()
 	{
@@ -596,9 +649,13 @@ public class State
 			if(!s.boxes.contains(box))
 				return false;
 		}
+		if(GreedyDFSWrapper(s.player, this.player)){
+			return true;
+		}
 
 		//TODO some trick with the player?
-		return player.x == s.player.x && player.y == s.player.y;
+//		return player.x == s.player.x && player.y == s.player.y;
+		return false;
 	}
 
 	@Override
@@ -611,8 +668,8 @@ public class State
 			hash += box.y * 6463553;
 		}
 
-		hash += player.x * 1000000;
-		hash += player.y * 4000000;
+//		hash += player.x * 1000000;
+//		hash += player.y * 4000000;
 
 		//TODO some trick with the player?
 		return hash;
