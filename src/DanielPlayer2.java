@@ -26,22 +26,78 @@ public class DanielPlayer2
 	HashMap<State, N> visited = new HashMap<State, N>();
     Queue<N> queue = new PriorityQueue<N>();
     
+    HashMap<State, N> reverseVisited = new HashMap<State, N>();
+    Queue<N> reverseQueue = new PriorityQueue<N>();
+    State startState;
+    
+    Stack<N> stack = new Stack<N>(); //for dfs testing
+    
     private int h0(State s)
     {
     	int score = 0;
     	
     	for(P goal : s.goals)
     	{
-    		if(!s.boxes.contains(goal))
-    			score -= 10;
+    		if(s.boxes.contains(goal))
+    			score += 10;
     	}
     	
     	return score;
     }
+    
+    private int ReverseH0(State s)
+    {
+    	int score = 0;
+    	
+    	for(P box : s.boxes)
+    	{
+    		if(startState.boxes.contains(box))
+    			score += 10;
+    	}
+    	
+    	//ignore the player position
+    	
+    	return score;
+    }
+    
+    private void BidirectionalAnswer(N forward, N backward)
+    {
+    	System.err.println("bidirectional answer");
+    	N n;
+    	
+    	LinkedList<N> list = new LinkedList();
+    	n = forward;
+    	while(true)
+    	{
+    		if(n == null)
+    			break;
+    		
+    		list.addFirst(n);
+    		n = n.parent;
+    	}
+    	
+    	n = backward;
+    	while(true)
+    	{
+    		if(n == null)
+    			break;
+    		
+    		list.addLast(n);
+    		n = n.parent;
+    	}
+    	
+    	for(N sequential : list)
+    	{
+    		sequential.print();
+    	}
+    }
 	
 	public void play(State startState)
 	{
+		//forward queue
 		{
+			//add start state
+			this.startState = startState;
 			N startNode = new N();
 			startNode.state = startState;
 			startNode.parent = null;
@@ -49,48 +105,154 @@ public class DanielPlayer2
 			queue.add(startNode);
 		}
 		
-		int expanded = 0;
-		
-		while(queue.size() != 0)
+		//backward queue
 		{
-			N pn = (N)queue.poll(); //parent node
-			expanded++;
+			//add all possible end states
+			Collection<State> endings = startState.GetAllPossibleEndings();
 			
-			int limit = 10000;
-			if(expanded >= limit)
-				break;
-			if(expanded >= limit - 50)
-				pn.print();
-			
-			if(pn.state.isWin())
+			for(State ending : endings)
 			{
-				System.err.println("found solution");
-				break;
+				//ending.Print();
+				
+				//dont add thoose that are equivalent to any node in the list already
+				{
+					if(reverseVisited.containsKey(ending))
+						continue;
+					
+					reverseVisited.put(ending, null);
+				}
+				
+				N endNode = new N();
+				endNode.state = ending;
+				endNode.parent = null;
+				endNode.score = ReverseH0(endNode.state);
+				reverseQueue.add(endNode);
+				//stack.push(endNode);
 			}
 			
-			//expanded all child states
-			Collection<State> c = new LinkedList<State>(); //collection
-			pn.state.PossibleAdvanced(c);
-			
-			for(State cs : c) //child node
+			reverseVisited.clear();
+		}
+		
+		int expanded = 0;
+		int limit = 10000;
+		
+		while(true)
+		{
+			//forward search----------------------------------------------------------------------
+			if(queue.size() == 0)
 			{
+				System.err.println("no forward solution found");
+				break;
+			}
+		
+			{
+				N pn = (N)queue.poll(); //parent node
+				expanded++;
+				//pn.print();
+				
+				if(expanded >= limit)
+				{
+					System.err.println("broke the limit. limit is " + limit);
+					break;
+				}
+				
+				if(expanded >= limit - 50)
+					pn.print();
+				
+				if(pn.state.isWin())
+				{
+					System.err.println("found forward solution");
+					break;
+				}
+				
+				if(reverseVisited.containsKey(pn.state))
+				{
+					pn.print();
+					((N)reverseVisited.get(pn.state)).print();
+					BidirectionalAnswer(pn, reverseVisited.get(pn.state));
+					System.err.println("found bidirection solution, from forward search");
+					break;
+				}
+				
+				//expanded all child states
+				Collection<State> c = new LinkedList<State>(); //collection
+				pn.state.PossibleAdvanced(c);
+				
+				for(State cs : c) //child node
 				{
 					if(visited.containsKey(cs))
 						continue;
-					
-					visited.put(cs, null);
+						
+					N cn = new N();
+					cn.state = cs;
+					cn.parent = pn;
+					cn.score = h0(cn.state);
+					queue.add(cn);
+					visited.put(cs, cn);
+					//cn.print();
 				}
-				//cs.Print();
+			}
+			
+			//reverse search----------------------------------------------------------------------------------------------
+			if(reverseQueue.size() == 0)
+			{
+				System.err.println("no reverse solution found");
+				break;
+			}
+			
+			{
+				N pn = (N)reverseQueue.poll(); //parent node
+				//N pn = (N)stack.pop();
+				expanded++;
+				//pn.print();
 				
-				N cn = new N();
-				cn.state = cs;
-				cn.parent = pn;
-				cn.score = h0(cn.state);
-				queue.add(cn);
+				if(expanded >= limit)
+				{
+					System.err.println("broke the limit. limit is " + limit);
+					break;
+				}
+					
+				if(expanded >= limit - 50)
+					pn.print();
+				
+				if(pn.state.isWin(startState))
+				{
+					System.err.println("found reverse solution");
+					break;
+				}
+				
+				if(visited.containsKey(pn.state))
+				{
+					pn.print();
+					((N)visited.get(pn.state)).print();
+					BidirectionalAnswer(visited.get(pn.state), pn);
+					System.err.println("found bidirection solution, from backward search");
+					break;
+				}
+				
+				//expanded all child states
+				Collection<State> c = new LinkedList<State>(); //collection
+				pn.state.reversePossibleAdvanced(c);
+				
+				for(State cs : c) //child node
+				{
+					if(reverseVisited.containsKey(cs))
+						continue;
+					
+					N cn = new N();
+					cn.state = cs;
+					cn.parent = pn;
+					cn.score = ReverseH0(cn.state);
+					reverseVisited.put(cs, cn);
+					reverseQueue.add(cn);
+					//stack.push(cn);
+					//cn.print();
+				}
 			}
 		}
 		
 		System.err.println("queue size: " + queue.size());
+		System.err.println("reverse queue size: " + reverseQueue.size());
 
 		/*
 		while(queue.size() != 0)

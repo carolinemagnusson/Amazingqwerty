@@ -33,7 +33,7 @@ public class State
 	public P player; //player position
 	public Set<P> boxes = new HashSet<P>();
 	public P pushDirection; //direction that the player push the box. Used for building path
-	private static Set<P> visited;
+	private static Set<P> visited = new HashSet<P>();
 	
 	public State()
 	{
@@ -260,77 +260,125 @@ public class State
 		player = pushed;
 		updateUnsafePositions();
 	}
+	
+	public void pull(P p, P d)
+	{
+		//p player position
+		//d direction the box will be pulled
+		P box = new P(p.x-d.x*2, p.y-d.y*2);
+		P adjacent = new P(p.x-d.x, p.y-d.y);
+
+		//assumes its okay to do so
+		boxes.remove(box);
+		boxes.add(adjacent);
+		player = p;
+	}
+	
 	//TODO player has to move to the position next to the box
-		public void PossibleBox(Collection<State> c, P box)
+	public void PossibleBox(Collection<State> c, P box)
+	{
+		//somewhat expensive call
+
+		//check in which direction the box and be pushed
+		for(P a : adjacent_lu)
 		{
-			//somewhat expensive call
+			P ap = new P(box.x + a.x, box.y + a.y); //adjacent position
+			P op = new P(box.x - a.x, box.y - a.y); //opposite position
 
-			//check in which direction the box and be pushed
-			for(P a : adjacent_lu)
+			//skip all boxes that are not free on both sides
 			{
-				P ap = new P(box.x + a.x, box.y + a.y); //adjacent position
-				P op = new P(box.x - a.x, box.y - a.y); //opposite position
+				if(walls.contains(ap))
+					continue;
+				else if(boxes.contains(ap))
+					continue;
 
-				//skip all boxes that are not free on both sides
-				{
-					if(walls.contains(ap))
-						continue;
-					else if(boxes.contains(ap))
-						continue;
+				if(walls.contains(op))
+					continue;
+				else if(boxes.contains(op))
+					continue;
+			}
 
-					if(walls.contains(op))
-						continue;
-					else if(boxes.contains(op))
-						continue;
-				}
-
-				//check if there's a path to the free space next to the box
-				{
+			//check if there's a path to the free space next to the box
+			{
 //					if(!unsafePositions.contains(op)){
 
-						N n = new N();
-						n.PB = ap; // the position next to the box that the
-											// player should move to
-						n.pA = player;
-						visited = new HashSet<P>();
+					N n = new N();
+					n.PB = ap; // the position next to the box that the
+										// player should move to
+					n.pA = player;
+					visited = new HashSet<P>();
 
-						if (GreedyDFS(n, 0)) {
-							State childState = new State();
-							childState.boxes.addAll(boxes);
-							childState.player = ap;
-							childState.Push(n.PB, new P(-a.x, -a.y));
-							// cs.Print();
+					if (GreedyDFS(n, 0)) {
+						State childState = new State();
+						childState.boxes.addAll(boxes);
+						childState.player = ap;
+						childState.Push(n.PB, new P(-a.x, -a.y));
+						// cs.Print();
 //							if(!childState.isDynamicDeadlocks()){
-								c.add(childState);
+							c.add(childState);
 //							}
-							
+						
 //						}
-					}
 				}
+			}
 
-				//check the other side too
-				{
+			//check the other side too
+			{
 //					if (!unsafePositions.contains(ap)) {
-						N n = new N();
-						n.PB = op;
-						n.pA = player;
-						visited = new HashSet<P>();
+					N n = new N();
+					n.PB = op;
+					n.pA = player;
+					visited = new HashSet<P>();
 
-						if (GreedyDFS(n, 0)) {
-							State cs = new State();
-							cs.boxes.addAll(boxes);
-							cs.player = op;
-							cs.Push(n.PB, a);
-							// cs.Print();
+					if (GreedyDFS(n, 0)) {
+						State cs = new State();
+						cs.boxes.addAll(boxes);
+						cs.player = op;
+						cs.Push(n.PB, a);
+						// cs.Print();
 //							if(cs.isDynamicDeadlocks()){
-								c.add(cs);
+							c.add(cs);
 //							}
-							
+						
 //						}
-					}
 				}
 			}
 		}
+	}
+	
+	public void reversePossibleBox(Collection<State> c, P box)
+	{
+		//somewhat expensive call
+
+		//check all direction around the box in which direction the box and be pulled
+		for(P a : adjacent_lrud)
+		{
+			P ap = new P(box.x + a.x, box.y + a.y); //adjacent position
+			P aap = new P(box.x + a.x*2, box.y + a.y*2); //adjacent to the adjacent position, the position where the player will stand on
+
+			//skip all boxes that do not have two free spaces on all sides
+			{
+				if(walls.contains(ap))
+					continue;
+				else if(boxes.contains(ap))
+					continue;
+
+				if(walls.contains(aap))
+					continue;
+				else if(boxes.contains(aap))
+					continue;
+			}
+
+			if(GreedyDFSWrapper(player, aap))
+			{
+				State childState = new State();
+				childState.boxes.addAll(boxes);
+				childState.player = player;
+				childState.pull(aap, a);
+				c.add(childState);
+			}
+		}
+	}
 
 	public void PossibleAdvanced(Collection<State> c)
 	{
@@ -339,6 +387,15 @@ public class State
 		//seek all states where you can push a box
 		for(P box : boxes)
 			PossibleBox(c, box);
+	}
+	
+	public void reversePossibleAdvanced(Collection<State> c)
+	{
+		//expensive call
+
+		//seek all states where you can pull a box
+		for(P box : boxes)
+			reversePossibleBox(c, box);
 	}
 
 	public void Print()
@@ -649,12 +706,13 @@ public class State
 			if(!s.boxes.contains(box))
 				return false;
 		}
+		
+		//if all the boxes have the same position and the player can find a path to the other player in the other "reality" then the state of the "realitys" must be the same
 		if(GreedyDFSWrapper(s.player, this.player)){
 			return true;
 		}
 
-		//TODO some trick with the player?
-//		return player.x == s.player.x && player.y == s.player.y;
+		//return player.x == s.player.x && player.y == s.player.y;
 		return false;
 	}
 
@@ -668,10 +726,42 @@ public class State
 			hash += box.y * 6463553;
 		}
 
-//		hash += player.x * 1000000;
-//		hash += player.y * 4000000;
-
-		//TODO some trick with the player?
+		//dont hash the player, a check will be performed in equals()
+		//hash += player.x * 1000000;
+		//hash += player.y * 4000000;
 		return hash;
+	}
+	
+	public boolean isWin(State desiredState)
+	{
+		//check that all boxes and player in current state is equivalent to the desired state
+		return equals(desiredState);
+	}
+	
+	public Collection<State> GetAllPossibleEndings()
+	{
+		LinkedList<State> list = new LinkedList<State>();
+		{
+			//determine where the player can be, he must be next to a goal
+			for(P goal : goals)
+			{
+				for(P a : adjacent_lrud)
+				{
+					P ap = new P(goal.x + a.x, goal.y + a.y);
+					
+					if(goals.contains(ap))
+						continue;
+					if(walls.contains(ap))
+						continue;
+						
+					State endState = new State();
+					endState.boxes.addAll(goals); //put all boxes straight onto the goals
+					endState.player = ap;
+					list.add(endState);
+				}
+			}
+		}
+		
+		return list;
 	}
 }
