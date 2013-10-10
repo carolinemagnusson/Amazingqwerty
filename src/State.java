@@ -34,6 +34,7 @@ public class State
 	public Set<P> boxes = new HashSet<P>();
 	public P pushDirection; //direction that the player push the box. Used for building path
 	private static Set<P> visited = new HashSet<P>();
+	private P leftUpperP;
 	
 	public State()
 	{
@@ -89,6 +90,7 @@ public class State
 		
 		// Create initial unsafe positions, these may need to be updated when box is place on goal
 		updateUnsafePositions();
+		setLeftUpperPosition();
 	}
 
 	/*
@@ -236,10 +238,13 @@ public class State
 		else if(direction.equals(adjacent_lrud[2])){
 			return "U";
 		}
+		else if(direction.equals(adjacent_lrud[3])){
+			return "D";
+		}
 		else{
 			System.err.println("Direction func does not work");
 		}
-		return "D";
+		return "";
 	}
 	
 	
@@ -259,6 +264,7 @@ public class State
 		pushDirection = d;
 		player = pushed;
 		updateUnsafePositions();
+		setLeftUpperPosition(); //Set the new left upper position
 	}
 	
 	public void pull(P p, P d)
@@ -298,9 +304,8 @@ public class State
 					continue;
 			}
 
-			//check if there's a path to the free space next to the box
-			{
-//					if(!unsafePositions.contains(op)){
+				{
+					if(!unsafePositions.contains(op)){
 
 					N n = new N();
 					n.PB = ap; // the position next to the box that the
@@ -317,33 +322,31 @@ public class State
 //							if(!childState.isDynamicDeadlocks()){
 							c.add(childState);
 //							}
-						
 //						}
 				}
 			}
 
 			//check the other side too
-			{
-//					if (!unsafePositions.contains(ap)) {
-					N n = new N();
-					n.PB = op;
-					n.pA = player;
-					visited = new HashSet<P>();
+					if (!unsafePositions.contains(ap)) {
+						N n = new N();
+						n.PB = op;
+						n.pA = player;
+						visited = new HashSet<P>();
 
-					if (GreedyDFS(n, 0)) {
-						State cs = new State();
-						cs.boxes.addAll(boxes);
-						cs.player = op;
-						cs.Push(n.PB, a);
-						// cs.Print();
+						if (GreedyDFS(n, 0)) {
+							State cs = new State();
+							cs.boxes.addAll(boxes);
+							cs.player = op;
+							cs.Push(n.PB, a);
+							// cs.Print();
 //							if(cs.isDynamicDeadlocks()){
 							c.add(cs);
-//							}
-						
-//						}
+						}
+					}
+
 				}
 			}
-		}
+
 	}
 	
 	public void reversePossibleBox(Collection<State> c, P box)
@@ -546,6 +549,8 @@ public class State
 		return false;
 	}
 	//TODO Should unsafe positions change when a box is placed on a goal between to corners ?? YES!
+	//TODO It should not check for any kind of dynamic unsafe position (ie, don't check boxes). Because then you cannot move
+	//the box that makes the deadlock.
 	private Set<P> unsafePositions()
 	{
 		Set<P> unsafePositions = new HashSet<P>();
@@ -586,116 +591,191 @@ public class State
 				
 			}
 		}
-		HashSet<P> tmpSet = new HashSet<P>();
-		HashSet<P> tmpFound = new HashSet<P>();
-		boolean containsGoal = false, foundSecondCorner = false;
-		P tmpP;
-		for (P p : unsafePositions)
-		{
-			// Check right direction for horizontal unsafe states
-			for(int i = p.x + 1; i < columns; i++)
-			{
-				tmpP = new P(i, p.y);
-				if (goals.contains(tmpP) && !boxes.contains(tmpP))
-				{
-					containsGoal = true;
-					break;
-				} else if(walls.contains(new P(i,p.y - 1)) && !walls.contains(tmpP))
-					tmpSet.add(tmpP);
-
-				
-				if (unsafePositions.contains(tmpP))
-				{
-					foundSecondCorner = true;
-					break;
-				}
-
-			}
-			if(!containsGoal && foundSecondCorner)
-				tmpFound.addAll(tmpSet);
-
-			tmpSet.clear();
-			containsGoal = false;
-			foundSecondCorner = false;
-
-			for(int i = p.x + 1; i < columns; i++)
-			{
-				tmpP = new P(i, p.y);
-				if (goals.contains(tmpP) && !boxes.contains(tmpP))
-				{
-					containsGoal = true;
-					break;
-				} else if(walls.contains(new P(i,p.y + 1)) && !walls.contains(tmpP))
-					tmpSet.add(tmpP);
-				
-				if (unsafePositions.contains(tmpP))
-				{
-					foundSecondCorner = true;
-					break;
-				}
-
-			}
-			if(!containsGoal && foundSecondCorner)
-				tmpFound.addAll(tmpSet);
-
-			tmpSet.clear();
-			containsGoal = false;
-			foundSecondCorner = false;
-
-			// Check down direction for vertical unsafe states
-			for(int i = p.y + 1; i < rows; i++)
-			{
-				tmpP = new P(p.x, i);
-				if (goals.contains(tmpP) && !boxes.contains(tmpP))
-				{
-					containsGoal = true;
-					break;
-				} else if(walls.contains(new P(p.x - 1, i)) && !walls.contains(tmpP))
-					tmpSet.add(tmpP);
-				
-				if (unsafePositions.contains(tmpP))
-				{
-					foundSecondCorner = true;
-					break;
-				}
-
-			}
-			if(!containsGoal && foundSecondCorner)
-				tmpFound.addAll(tmpSet);
-
-			tmpSet.clear();
-			containsGoal = false;
-			foundSecondCorner = false;
-			
-			for(int i = p.y + 1; i < rows; i++)
-			{
-				tmpP = new P(p.x, i);
-				if (goals.contains(tmpP))
-				{
-					containsGoal = true;
-					break;
-				} else if(walls.contains(new P(p.x + 1, i)) && !walls.contains(tmpP))
-					tmpSet.add(tmpP);
-				
-				if (unsafePositions.contains(tmpP))
-				{
-					foundSecondCorner = true;
-					break;
-				}
-
-			}
-			if(!containsGoal && foundSecondCorner)
-				tmpFound.addAll(tmpSet);
-
-			tmpSet.clear();
-			containsGoal = false;
-			foundSecondCorner = false;
-
-
-		}
-		unsafePositions.addAll(tmpFound);
+//		HashSet<P> tmpSet = new HashSet<P>();
+//		HashSet<P> tmpFound = new HashSet<P>();
+//		boolean containsGoal = false, foundSecondCorner = false;
+//		P tmpP;
+//		for (P p : unsafePositions)
+//		{
+//			// Check right direction for horizontal unsafe states
+//			for(int i = p.x + 1; i < columns; i++)
+//			{
+//				tmpP = new P(i, p.y);
+//				if (goals.contains(tmpP) && !boxes.contains(tmpP))
+//				{
+//					containsGoal = true;
+//					break;
+//				} else if(walls.contains(new P(i,p.y - 1)) && !walls.contains(tmpP))
+//					tmpSet.add(tmpP);
+//
+//				
+//				if (unsafePositions.contains(tmpP))
+//				{
+//					foundSecondCorner = true;
+//					break;
+//				}
+//
+//			}
+//			if(!containsGoal && foundSecondCorner)
+//				tmpFound.addAll(tmpSet);
+//
+//			tmpSet.clear();
+//			containsGoal = false;
+//			foundSecondCorner = false;
+//
+//			for(int i = p.x + 1; i < columns; i++)
+//			{
+//				tmpP = new P(i, p.y);
+//				if (goals.contains(tmpP) && !boxes.contains(tmpP))
+//				{
+//					containsGoal = true;
+//					break;
+//				} else if(walls.contains(new P(i,p.y + 1)) && !walls.contains(tmpP))
+//					tmpSet.add(tmpP);
+//				
+//				if (unsafePositions.contains(tmpP))
+//				{
+//					foundSecondCorner = true;
+//					break;
+//				}
+//
+//			}
+//			if(!containsGoal && foundSecondCorner)
+//				tmpFound.addAll(tmpSet);
+//
+//			tmpSet.clear();
+//			containsGoal = false;
+//			foundSecondCorner = false;
+//
+//			// Check down direction for vertical unsafe states
+//			for(int i = p.y + 1; i < rows; i++)
+//			{
+//				tmpP = new P(p.x, i);
+//				if (goals.contains(tmpP) && !boxes.contains(tmpP))
+//				{
+//					containsGoal = true;
+//					break;
+//				} else if(walls.contains(new P(p.x - 1, i)) && !walls.contains(tmpP))
+//					tmpSet.add(tmpP);
+//				
+//				if (unsafePositions.contains(tmpP))
+//				{
+//					foundSecondCorner = true;
+//					break;
+//				}
+//
+//			}
+//			if(!containsGoal && foundSecondCorner)
+//				tmpFound.addAll(tmpSet);
+//
+//			tmpSet.clear();
+//			containsGoal = false;
+//			foundSecondCorner = false;
+//			
+//			for(int i = p.y + 1; i < rows; i++)
+//			{
+//				tmpP = new P(p.x, i);
+//				if (goals.contains(tmpP))
+//				{
+//					containsGoal = true;
+//					break;
+//				} else if(walls.contains(new P(p.x + 1, i)) && !walls.contains(tmpP))
+//					tmpSet.add(tmpP);
+//				
+//				if (unsafePositions.contains(tmpP))
+//				{
+//					foundSecondCorner = true;
+//					break;
+//				}
+//
+//			}
+//			if(!containsGoal && foundSecondCorner)
+//				tmpFound.addAll(tmpSet);
+//
+//			tmpSet.clear();
+//			containsGoal = false;
+//			foundSecondCorner = false;
+//
+//
+//		}
+//		unsafePositions.addAll(tmpFound);
 		return unsafePositions;
 	}	
+	
+	
+	public void setLeftUpperPosition(){
+		//P.x is column and P.y is row
+		Queue<P> queue = new LinkedList<P>();
+		HashSet<P> visited = new HashSet<>();
+		P startPos = this.player;
+		P tempLeftMost = new P(columns, rows); //find smaller rows and columns, in first hand smaller columns (smaller x)
+		queue.add(startPos);
+		
+		while (!queue.isEmpty()) {
+			P next = queue.poll();
+			visited.add(next);
+			if (tempLeftMost.x > next.x) {
+					tempLeftMost = new P(next.x, next.y);
+										
+			} else if (tempLeftMost.x == next.x) {
+				if (tempLeftMost.y > next.y) {
+					tempLeftMost = new P(next.x, next.y);
+				}
+			}
+			for (P a: adjacent_lrud){
+				P newPos = new P(next.x + a.x, next.y + a.y);
+				if(walls.contains(newPos))
+					continue;
+				else if(boxes.contains(newPos))
+					continue;
+				if(!visited.contains(newPos)){
+					queue.add(newPos);
+				}
+			}
+		}
+		leftUpperP = tempLeftMost;
+		
+	}
+	
+	
+	public void printUpLeftPos(){
+		setLeftUpperPosition();
+		for(int iy=0; iy<rows; iy++)
+		{
+			for(int ix=0; ix<columns; ix++)
+			{
+				P xy = new P(ix, iy);
+				boolean w = walls.contains(xy);
+				boolean b = boxes.contains(xy);
+				boolean g = goals.contains(xy);
+				boolean isUpLeft = (ix==leftUpperP.x && iy == leftUpperP.y);
+				boolean p = xy.x == player.x && xy.y == player.y;
+				if(isUpLeft)
+					System.err.print('Y');
+				else
+				{
+					if(w && !b && !g && !p)
+						System.err.print(C.wall);
+					else if(!w && b && !g && !p)
+						System.err.print(C.box);
+					else if(!w && !b && g && !p)
+						System.err.print(C.goal);
+					else if(!w && !b && !g && p)
+						System.err.print(C.player);
+					else if(!w && !b && !g && !p)
+						System.err.print(C.empty);
+					else if(!w && b && g && !p)
+						System.err.print(C.boxOnGoal);
+					else if(!w && !b && g && p)
+						System.err.print(C.playerOnGoal);
+					else
+						System.err.print("?"); //throw exception?
+				}
+
+			}
+			System.err.println();
+		}
+	}
 
 	@Override
 	public boolean equals(Object b){
@@ -713,6 +793,12 @@ public class State
 		}
 
 		//return player.x == s.player.x && player.y == s.player.y;
+//		if(GreedyDFSWrapper(s.player, this.player)){
+//			return true;
+//		}
+		if(leftUpperP.x == s.leftUpperP.x && leftUpperP.y == s.leftUpperP.y){
+			return true;
+		}
 		return false;
 	}
 
@@ -725,10 +811,10 @@ public class State
 			hash += box.x * 5234544;
 			hash += box.y * 6463553;
 		}
+				
+		hash += leftUpperP.x * 1000000;
+		hash += leftUpperP.y * 4000000;
 
-		//dont hash the player, a check will be performed in equals()
-		//hash += player.x * 1000000;
-		//hash += player.y * 4000000;
 		return hash;
 	}
 	
