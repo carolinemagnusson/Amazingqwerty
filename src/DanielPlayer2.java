@@ -36,10 +36,17 @@ public class DanielPlayer2
     {
     	int score = 0;
     	
-    	for(P goal : s.goals)
+//    	for(P goal : s.goals)
+//    	{
+//    		if(s.boxes.contains(goal))
+//    			score += 10;
+//    	}
+		for(P goal : s.goals)
     	{
-    		if(s.boxes.contains(goal))
-    			score += 10;
+			for(P box : s.boxes)
+			{
+				score -= State.ManhattanDistance(goal, box);
+			}
     	}
     	
     	return score;
@@ -49,10 +56,18 @@ public class DanielPlayer2
     {
     	int score = 0;
     	
-    	for(P box : s.boxes)
+//    	for(P box : s.boxes)
+//    	{
+//    		if(startState.boxes.contains(box))
+//    			score += 10;
+//    	}
+    	
+    	for(P state_box : s.boxes)
     	{
-    		if(startState.boxes.contains(box))
-    			score += 10;
+			for(P start_box : startState.boxes)
+			{
+				score -= startState.ManhattanDistance(state_box, start_box);
+			}
     	}
     	
     	//ignore the player position
@@ -134,7 +149,7 @@ public class DanielPlayer2
 		}
 		
 		int expanded = 0;
-		int limit = 10000;
+		int limit = Integer.MAX_VALUE;
 		
 		while(true)
 		{
@@ -150,13 +165,16 @@ public class DanielPlayer2
 				expanded++;
 				//pn.print();
 				
-				if(expanded >= limit)
-				{
-					System.err.println("broke the limit. limit is " + limit);
-					break;
-				}
-				
-				if(expanded >= limit - 50)
+//				if(expanded >= limit)
+//				{
+//					System.err.println("broke the limit. limit is " + limit);
+//					break;
+//				}
+//				
+//				if(expanded >= limit - 50)
+//					pn.print();
+					
+				if(expanded % 10001 == 0)
 					pn.print();
 				
 				if(pn.state.isWin())
@@ -176,6 +194,7 @@ public class DanielPlayer2
 				
 				//expanded all child states
 				Collection<State> c = new LinkedList<State>(); //collection
+				//if macro move do that otherwize backup one step and try possible advanced
 				pn.state.PossibleAdvanced(c);
 				
 				for(State cs : c) //child node
@@ -206,13 +225,16 @@ public class DanielPlayer2
 				expanded++;
 				//pn.print();
 				
-				if(expanded >= limit)
-				{
-					System.err.println("broke the limit. limit is " + limit);
-					break;
-				}
+//				if(expanded >= limit)
+//				{
+//					System.err.println("broke the limit. limit is " + limit);
+//					break;
+//				}
 					
-				if(expanded >= limit - 50)
+//				if(expanded >= limit - 50)
+//					pn.print();
+					
+				if(expanded % 10002 == 0)
 					pn.print();
 				
 				if(pn.state.isWin(startState))
@@ -230,7 +252,7 @@ public class DanielPlayer2
 					break;
 				}
 				
-				//expanded all child states
+				//expanded all possible child states
 				Collection<State> c = new LinkedList<State>(); //collection
 				pn.state.reversePossibleAdvanced(c);
 				
@@ -265,16 +287,153 @@ public class DanielPlayer2
 		System.err.println("expanded nodes: " + expanded);
 	}
 	
+	private class GreedyDFSBoxNode
+	{
+		
+	}
+	
+	private HashMap<State, GreedyDFSBoxNode> GreedyDFSBox_visited = new HashMap<State, GreedyDFSBoxNode>();
+	private static P[] adjacent_lrud = new P[]{new P(-1, 0), new P(+1, 0), new P(0, -1), new P(0, +1)}; //left right up down
+	private static P[] adjacent_lu = new P[]{new P(-1, 0), new P(0, -1)}; //left up
+	
+	private void GreedyDFSBox()
+	{
+		Queue<GreedyDFSBoxNode> GreedyDFSBox_queue = new PriorityQueue<GreedyDFSBoxNode>();	
+		
+		
+	}
+	
+	public void GreedyDFSBoxSearch()
+	{
+		
+	}
+	
+	public boolean reverse_macro(State state, P move_box, P start_box)
+    {
+    	//pull a box to it's starting position without moving other boxes
+    	for(P adjacent : adjacent_lrud)
+    	{
+    		P move_box_next = new P(move_box.x + adjacent.x, move_box.y + adjacent.y);
+    		P player_next = new P(move_box.x + adjacent.x * 2, move_box.y + adjacent.y * 2);
+    		
+    		if(state.boxes.contains(move_box_next))
+    			return false;
+    		if(state.walls.contains(move_box_next))
+    			return false;
+    		if(state.boxes.contains(player_next))
+    			return false;
+    		if(state.walls.contains(player_next))
+    			return false;
+		
+			//todo search a path to the next player position
+			
+			
+    		//pull boxes towards target position
+    		state.pull(player_next, adjacent);
+    	}
+    	
+    	return false;
+    }
+    
+    public void reverse_macro(State state)
+    {
+    	//move as many boxes as possible directly to goal
+    	for(P box : state.boxes)
+    	{
+    		//skip boxes that already have a goal
+    		if(state.goals.contains(box))
+    			continue;
+    			
+    		for(P goal : state.goals)
+    		{
+    			//skip goals that already have a box
+	    		if(state.boxes.contains(goal))
+	    			continue;
+    			
+    			reverse_macro(state, box, goal);
+    		}
+    	}
+    }
+	
 	public static void main(String args[])
 	{
 		DanielPlayer2 player = new DanielPlayer2();
 		int level = 1;
-		State s = MapsSLC.LoadMap(level);
+		State slc_state = MapsSLC.LoadMap(level);
 		System.err.println("SLC MAP #"+level);
-		System.err.println("rows: " + s.rows + " columns: " + s.columns);
-		s.Print();
+		System.err.println("rows: " + slc_state.rows + " columns: " + slc_state.columns);
+		slc_state.Print();
 		long start = System.currentTimeMillis();
-		player.play(s);
+		
+//		Scanner input = new Scanner(System.in);
+//		LinkedList<State> history = new LinkedList<State>();
+//		history.push(slc_state);
+//		State s = slc_state;
+//		LinkedList<String> move_history = new LinkedList<String>();
+//		
+//		while(!s.isWin())
+//		{
+//			String string_input = input.next();
+//			System.err.println(string_input);
+//			
+//			if(string_input.equals("z"))
+//			{
+//				System.err.println("undo");
+//				s = history.pollLast();
+//				move_history.pollLast();
+//				if(history.size() == 0)
+//					history.push(slc_state);
+//			}
+//			else if(string_input.equals("a"))
+//			{
+//				System.err.println("left");
+//				State next_state = new State();
+//				next_state.boxes.addAll(s.boxes);
+//				next_state.Push(new P(s.player.x, s.player.y), adjacent_lrud[0]);
+//				history.add(s);
+//				s = next_state;
+//				move_history.push("L");
+//			}
+//			else if(string_input.equals("d"))
+//			{
+//				System.err.println("right");
+//				State next_state = new State();
+//				next_state.boxes.addAll(s.boxes);
+//				next_state.Push(new P(s.player.x, s.player.y), adjacent_lrud[1]);
+//				history.add(s);
+//				s = next_state;
+//				move_history.push("R");
+//			}
+//			else if(string_input.equals("w"))
+//			{
+//				System.err.println("up");
+//				State next_state = new State();
+//				next_state.boxes.addAll(s.boxes);
+//				next_state.Push(new P(s.player.x, s.player.y), adjacent_lrud[2]);
+//				history.add(s);
+//				s = next_state;
+//				move_history.push("U");
+//			}
+//			else if(string_input.equals("s"))
+//			{
+//				System.err.println("down");
+//				State next_state = new State();
+//				next_state.boxes.addAll(s.boxes);
+//				next_state.Push(new P(s.player.x, s.player.y), adjacent_lrud[3]);
+//				history.add(s);
+//				s = next_state;
+//				move_history.push("D");
+//			}
+//			
+//			s.Print();
+//		}
+//		
+//		while(move_history.size() != 0)
+//		{
+//			System.err.print(move_history.pollFirst());
+//		}
+		player.play(slc_state);
+		
 		long end = System.currentTimeMillis();
 		long elapsed = end - start;
 		System.err.println("elapsed time(ms): " + elapsed);
