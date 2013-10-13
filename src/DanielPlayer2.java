@@ -480,9 +480,8 @@ public class DanielPlayer2
 //		}
 
 
-
-
 		System.err.println(SearchSolution(startState));
+		System.err.println("State.hashCollissionCounter: " + State.hashCollissionCounter);
 	}
 
 	private class GreedyDFSBoxNode

@@ -51,6 +51,7 @@ public class State
 	public P player; //player position
 	public Set<P> boxes = new HashSet<P>();
 	private static Set<P> visited = new HashSet<P>();
+	public static int hashCollissionCounter = 0;
 
 	public State()
 	{
@@ -756,6 +757,7 @@ public class State
 
 	@Override
 	public boolean equals(Object b){
+		hashCollissionCounter++;
 		State s = (State)b;
 
 		for(P box : boxes)
