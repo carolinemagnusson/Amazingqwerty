@@ -556,87 +556,11 @@ public class DanielPlayer2
 	public static void main(String args[])
 	{
 		DanielPlayer2 player = new DanielPlayer2();
-
 		State slc_state1 = MapsSLC.LoadMap(1);
-		State slc_state2 = MapsSLC.LoadMap(2);
-
+		System.err.println("rows: " + slc_state1.rows + " columns: " + slc_state1.columns);
 		long start = System.currentTimeMillis();
+
 		player.play(slc_state1);
-		//System.err.println(State.getPath2(slc_state1, slc_state2));
-//
-//		System.err.println("SLC MAP #"+level);
-//		System.err.println("rows: " + slc_state.rows + " columns: " + slc_state.columns);
-//		slc_state.Print();
-//
-//
-//		Scanner input = new Scanner(System.in);
-//		LinkedList<State> history = new LinkedList<State>();
-//		history.push(slc_state);
-//		State s = slc_state;
-//		LinkedList<String> move_history = new LinkedList<String>();
-//
-//		while(!s.isWin())
-//		{
-//			String string_input = input.next();
-//			System.err.println(string_input);
-//
-//			if(string_input.equals("z"))
-//			{
-//				System.err.println("undo");
-//				s = history.pollLast();
-//				move_history.pollLast();
-//				if(history.size() == 0)
-//					history.push(slc_state);
-//			}
-//			else if(string_input.equals("a"))
-//			{
-//				System.err.println("left");
-//				State next_state =
-//				next_state.boxes.addAll(s.boxes);
-//				next_state.Push(new P(s.player.x, s.player.y), adjacent_lrud[0]);
-//				history.add(s);
-//				s = next_state;
-//				move_history.push("L");
-//			}
-//			else if(string_input.equals("d"))
-//			{
-//				System.err.println("right");
-//				State next_state = new State();
-//				next_state.boxes.addAll(s.boxes);
-//				next_state.Push(new P(s.player.x, s.player.y), adjacent_lrud[1]);
-//				history.add(s);
-//				s = next_state;
-//				move_history.push("R");
-//			}
-//			else if(string_input.equals("w"))
-//			{
-//				System.err.println("up");
-//				State next_state = new State();
-//				next_state.boxes.addAll(s.boxes);
-//				next_state.Push(new P(s.player.x, s.player.y), adjacent_lrud[2]);
-//				history.add(s);
-//				s = next_state;
-//				move_history.push("U");
-//			}
-//			else if(string_input.equals("s"))
-//			{
-//				System.err.println("down");
-//				State next_state = new State();
-//				next_state.boxes.addAll(s.boxes);
-//				next_state.Push(new P(s.player.x, s.player.y), adjacent_lrud[3]);
-//				history.add(s);
-//				s = next_state;
-//				move_history.push("D");
-//			}
-//
-//			s.Print();
-//		}
-//
-//		while(move_history.size() != 0)
-//		{
-//			System.err.print(move_history.pollFirst());
-//		}
-		//player.play(slc_state);
 
 		long end = System.currentTimeMillis();
 		long elapsed = end - start;
