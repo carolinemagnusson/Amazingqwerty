@@ -34,6 +34,7 @@ public class State
 	public Set<P> boxes = new HashSet<P>();
 	public P pushDirection; //direction that the player push the box. Used for building path
 	private static Set<P> visited = new HashSet<P>();
+	public P leftUpperP;
 	
 	public State()
 	{
