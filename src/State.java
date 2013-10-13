@@ -42,8 +42,8 @@ public class State
 		}
 	}
 
-	private static P[] adjacent_lrud = new P[]{new P(-1, 0), new P(+1, 0), new P(0, -1), new P(0, +1)}; //left right up down
-	private static P[] adjacent_lu = new P[]{new P(-1, 0), new P(0, -1)}; //left up
+	public static P[] adjacent_lrud = new P[]{new P(-1, 0), new P(+1, 0), new P(0, -1), new P(0, +1)}; //left right up down
+	public static P[] adjacent_lu = new P[]{new P(-1, 0), new P(0, -1)}; //left up
 	public int rows, columns;
 	public Set<P> walls = new HashSet<P>();
 	public Set<P> goals = new HashSet<P>();
@@ -226,6 +226,8 @@ public class State
 						String pathstring = path(fromState, fromState.player, playerBeforePush);
 						sb.append(pathstring);
 						sb.append(pushDirection(directionPush));
+						
+						toState.player = movedBoxPrevious; //sneak modify the toState to fix a replay bug
 						return sb.toString();
 					}
 				}

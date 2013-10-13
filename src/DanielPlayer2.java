@@ -137,6 +137,8 @@ public class DanielPlayer2
 
     	for(N sequential : list)
     	{
+    		sequential.print();
+
     		if(from != null)
     		{
     			String pathstring = State.getPath2(from.state, sequential.state);
@@ -145,7 +147,6 @@ public class DanielPlayer2
     		}
 
     		from = sequential;
-    		sequential.print();
     	}
     }
 
