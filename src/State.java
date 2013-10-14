@@ -47,7 +47,6 @@ public class State
 	public int rows, columns;
 	public Set<P> walls = new HashSet<P>();
 	public Set<P> goals = new HashSet<P>();
-	public Set<P> unsafePositions = new HashSet<P>();
 	public P player; //player position
 	public Set<P> boxes = new HashSet<P>();
 	private static Set<P> visited = new HashSet<P>();
@@ -97,8 +96,6 @@ public class State
 			}
 		}
 
-		// Create initial unsafe positions, these may need to be updated when box is place on goal
-		updateUnsafePositions();
 	}
 
 	public State copyState()
@@ -194,7 +191,7 @@ public class State
 						String pathstring = path(fromState, fromState.player, playerBeforePush);
 						sb.append(pathstring);
 						sb.append(pushDirection(directionPush));
-						
+
 						toState.player = movedBoxPrevious; //sneak modify the toState to fix a replay bug
 						return sb.toString();
 					}
@@ -290,7 +287,6 @@ public class State
 			boxes.add(behindPushed);
 		}
 		player = pushed;
-		updateUnsafePositions();
 		boxMoved = behindPushed;
 	}
 
@@ -487,243 +483,6 @@ public class State
 			for(State s : c)
 				s.Print();
 		}
-	}
-	public void updateUnsafePositions()
-	{
-		unsafePositions = unsafePositions();
-	}
-
-	//TODO this should also print dynamic deadlocks and otherwise unsafe positions
-	public void printUnsafePositions()
-	{
-		for(int iy=0; iy<rows; iy++)
-		{
-			for(int ix=0; ix<columns; ix++)
-			{
-				P xy = new P(ix, iy);
-				boolean w = walls.contains(xy);
-				boolean b = boxes.contains(xy);
-				boolean g = goals.contains(xy);
-				boolean isUnsafe = unsafePositions.contains(xy);
-				boolean p = xy.x == player.x && xy.y == player.y;
-				if(isUnsafe)
-					System.err.print('X');
-				else
-				{
-					if(w && !b && !g && !p)
-						System.err.print(C.wall);
-					else if(!w && b && !g && !p)
-						System.err.print(C.box);
-					else if(!w && !b && g && !p)
-						System.err.print(C.goal);
-					else if(!w && !b && !g && p)
-						System.err.print(C.player);
-					else if(!w && !b && !g && !p)
-						System.err.print(C.empty);
-					else if(!w && b && g && !p)
-						System.err.print(C.boxOnGoal);
-					else if(!w && !b && g && p)
-						System.err.print(C.playerOnGoal);
-					else
-						System.err.print("?"); //throw exception?
-				}
-
-			}
-			System.err.println();
-		}
-	}
-	private boolean isDynamicDeadlocks()
-	{
-		P position;
-		for(int i = 0 ; i < this.rows; i++)
-		{
-			for (int j = 0; j < this.columns; j++)
-			{
-				position = new P(j,i);
-				// Top left
-				P p1 = new P(position.x -1, position.y);
-				P p2 = new P(position.x - 1, position.y - 1);
-				P p3 = new P(position.x, position.y - 1);
-				if (boxes.contains(p1) && boxes.contains(p2) && boxes.contains(p3))
-					return true;
-
-				// Top right
-				p1 = new P(position.x, position.y - 1);
-				p2 = new P(position.x + 1, position.y - 1);
-				p3 = new P(position.x + 1 , position.y);
-				if (boxes.contains(p1) && boxes.contains(p2) && boxes.contains(p3))
-					return true;
-
-				// Bottom left
-				p1 = new P(position.x - 1, position.y);
-				p2 = new P(position.x -1, position.y + 1);
-				p3 = new P(position.x , position.y + 1);
-				if (boxes.contains(p1) && boxes.contains(p2) && boxes.contains(p3))
-					return true;
-
-				// Bottom right
-				// Top right
-				p1 = new P(position.x + 1, position.y);
-				p2 = new P(position.x + 1, position.y + 1);
-				p3 = new P(position.x , position.y + 1);
-				if (boxes.contains(p1) && boxes.contains(p2) && boxes.contains(p3))
-					return true;
-
-
-			}
-		}
-		return false;
-	}
-	//TODO Should unsafe positions change when a box is placed on a goal between to corners ?? YES!
-	private Set<P> unsafePositions()
-	{
-		Set<P> unsafePositions = new HashSet<P>();
-		P possibleUnsafe,tmp1,tmp2;
-		// Find corners
-		for (int row = 0; row < rows; row++)
-		{
-			for(int col = 0; col < columns; col++)
-			{
-				possibleUnsafe = new P(col, row);
-				if (!boxes.contains(possibleUnsafe) && !walls.contains(possibleUnsafe) && !goals.contains(possibleUnsafe))
-				{
-					// Check top left corner type
-					tmp1 = new P(col - 1, row);
-					tmp2 = new P(col, row - 1);
-
-					if (walls.contains(tmp1) && walls.contains(tmp2))
-						unsafePositions.add(possibleUnsafe);
-
-					// Check for top right corner type
-					tmp1 = new P(col + 1, row);
-					tmp2 = new P(col, row - 1);
-					if (walls.contains(tmp1) && walls.contains(tmp2))
-						unsafePositions.add(possibleUnsafe);
-
-					// Check bottom left corner type
-					tmp1 = new P(col - 1, row);
-					tmp2 = new P(col, row + 1);
-					if (walls.contains(tmp1) && walls.contains(tmp2))
-						unsafePositions.add(possibleUnsafe);
-
-					// Check bottom right corner type
-					tmp1 = new P(col + 1, row);
-					tmp2 = new P(col , row + 1);
-					if (walls.contains(tmp1) && walls.contains(tmp2))
-						unsafePositions.add(possibleUnsafe);
-				}
-
-			}
-		}
-		HashSet<P> tmpSet = new HashSet<P>();
-		HashSet<P> tmpFound = new HashSet<P>();
-		boolean containsGoal = false, foundSecondCorner = false;
-		P tmpP;
-		for (P p : unsafePositions)
-		{
-			// Check right direction for horizontal unsafe states
-			for(int i = p.x + 1; i < columns; i++)
-			{
-				tmpP = new P(i, p.y);
-				if (goals.contains(tmpP) && !boxes.contains(tmpP))
-				{
-					containsGoal = true;
-					break;
-				} else if(walls.contains(new P(i,p.y - 1)) && !walls.contains(tmpP))
-					tmpSet.add(tmpP);
-
-
-				if (unsafePositions.contains(tmpP))
-				{
-					foundSecondCorner = true;
-					break;
-				}
-
-			}
-			if(!containsGoal && foundSecondCorner)
-				tmpFound.addAll(tmpSet);
-
-			tmpSet.clear();
-			containsGoal = false;
-			foundSecondCorner = false;
-
-			for(int i = p.x + 1; i < columns; i++)
-			{
-				tmpP = new P(i, p.y);
-				if (goals.contains(tmpP) && !boxes.contains(tmpP))
-				{
-					containsGoal = true;
-					break;
-				} else if(walls.contains(new P(i,p.y + 1)) && !walls.contains(tmpP))
-					tmpSet.add(tmpP);
-
-				if (unsafePositions.contains(tmpP))
-				{
-					foundSecondCorner = true;
-					break;
-				}
-
-			}
-			if(!containsGoal && foundSecondCorner)
-				tmpFound.addAll(tmpSet);
-
-			tmpSet.clear();
-			containsGoal = false;
-			foundSecondCorner = false;
-
-			// Check down direction for vertical unsafe states
-			for(int i = p.y + 1; i < rows; i++)
-			{
-				tmpP = new P(p.x, i);
-				if (goals.contains(tmpP) && !boxes.contains(tmpP))
-				{
-					containsGoal = true;
-					break;
-				} else if(walls.contains(new P(p.x - 1, i)) && !walls.contains(tmpP))
-					tmpSet.add(tmpP);
-
-				if (unsafePositions.contains(tmpP))
-				{
-					foundSecondCorner = true;
-					break;
-				}
-
-			}
-			if(!containsGoal && foundSecondCorner)
-				tmpFound.addAll(tmpSet);
-
-			tmpSet.clear();
-			containsGoal = false;
-			foundSecondCorner = false;
-
-			for(int i = p.y + 1; i < rows; i++)
-			{
-				tmpP = new P(p.x, i);
-				if (goals.contains(tmpP))
-				{
-					containsGoal = true;
-					break;
-				} else if(walls.contains(new P(p.x + 1, i)) && !walls.contains(tmpP))
-					tmpSet.add(tmpP);
-
-				if (unsafePositions.contains(tmpP))
-				{
-					foundSecondCorner = true;
-					break;
-				}
-
-			}
-			if(!containsGoal && foundSecondCorner)
-				tmpFound.addAll(tmpSet);
-
-			tmpSet.clear();
-			containsGoal = false;
-			foundSecondCorner = false;
-
-
-		}
-		unsafePositions.addAll(tmpFound);
-		return unsafePositions;
 	}
 
 	@Override

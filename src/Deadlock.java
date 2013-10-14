@@ -11,32 +11,32 @@ public class Deadlock {
 			//System.err.println("SLC MAP # "+i);
 			//System.err.println("rows: " + s.rows + " columns: " + s.columns);
 			//s.Print();
-			try {
-				s.unsafePositions = Deadlock.staticDeadlocks(s);
-			} catch (InvalidMapException e) {
-				System.out.println("MAP " + i + " is invalid map" );
-			}
+//			try {
+//				// = Deadlock.staticDeadlocks(s);
+//			} catch (InvalidMapException e) {
+//				System.out.println("MAP " + i + " is invalid map" );
+//			}
 			Deadlock.printUnsafePositions(s);
 			System.out.println("Map: " + i + " is deadlock " + Deadlock.isDynamicDeadlocks(s));
 		}
 //		clearState(slc_state);
 		s.Print();
-		
-		try
-		{
-		s.unsafePositions = staticDeadlocks(s);
-		} catch (InvalidMapException e)
-		{
-			System.err.println("INVALID MAP");
-		}
+
+//		try
+//		{
+//		//s.unsafePositions = staticDeadlocks(s);
+//		} catch (InvalidMapException e)
+//		{
+//			System.err.println("INVALID MAP");
+//		}
 		printUnsafePositions(s);
-		
+
 	}
 	private static void clearState(State s)
 	{
 		s.walls = new HashSet<P>();
 		s.goals = new HashSet<P>();
-		s.unsafePositions = new HashSet<P>();
+		//s.unsafePositions = new HashSet<P>();
 	}
 	// NOT DONE
 	private static boolean isTunnelDeadlock(State s, int direction)
@@ -61,10 +61,10 @@ public class Deadlock {
 					if (s.boxes.contains(p1) || s.walls.contains(p1))
 						return true;
 				}
-				else 
+				else
 					isTunnel = false;
 			}
-			
+
 		}
 		else if(direction == C.DOWN){
 			 isTunnel = true;
@@ -78,7 +78,7 @@ public class Deadlock {
 						if (s.boxes.contains(p1) || s.walls.contains(p1))
 							return true;
 					}
-					else 
+					else
 						isTunnel = false;
 				}
 		}
@@ -94,7 +94,7 @@ public class Deadlock {
 						if (s.boxes.contains(p1) || s.walls.contains(p1))
 							return true;
 					}
-					else 
+					else
 						isTunnel = false;
 				}
 		}
@@ -110,14 +110,14 @@ public class Deadlock {
 						if (s.boxes.contains(p1) || s.walls.contains(p1))
 							return true;
 					}
-					else 
+					else
 						isTunnel = false;
 				}
 		}
 		return false;
 	}
-	
-	
+
+
 	public static void printUnsafePositions(State s)
 	{
 		for(int iy=0; iy<s.rows; iy++)
@@ -128,11 +128,11 @@ public class Deadlock {
 				boolean w = s.walls.contains(xy);
 				boolean b = s.boxes.contains(xy);
 				boolean g = s.goals.contains(xy);
-				boolean isUnsafe = s.unsafePositions.contains(xy);
+				//boolean isUnsafe = s.unsafePositions.contains(xy);
 				boolean p = xy.x == s.player.x && xy.y == s.player.y;
-				if(isUnsafe)
+				//if(isUnsafe)
 					System.err.print('X');
-				else
+				//else
 				{
 					if(w && !b && !g && !p)
 						System.err.print(C.wall);
@@ -156,7 +156,7 @@ public class Deadlock {
 			System.err.println();
 		}
 	}
-	
+
 	//TODO if goal is in corner it doesn't detect invalid maps correctly
 	public static Set<P> staticDeadlocks(State s) throws InvalidMapException
 	{
@@ -211,16 +211,16 @@ public class Deadlock {
 				tmpP = new P(i, p.y);
 				if (s.boxes.contains(tmpP))
 					foundBoxes++;
-				
+
 				if (s.goals.contains(tmpP))
 					foundGoals++;
-				
+
 				if(s.walls.contains(new P(i,p.y - 1)) && !s.walls.contains(tmpP))
 					tmpSet.add(tmpP);
 				else
 					break;
 
-				
+
 				if (unsafePositions.contains(tmpP))
 				{
 					foundSecondCorner = true;
@@ -231,7 +231,7 @@ public class Deadlock {
 			if (foundSecondCorner && foundGoals < foundBoxes)
 				throw new InvalidMapException();
 			else if(foundGoals  == 0 && foundSecondCorner)
-				tmpFound.addAll(tmpSet); 
+				tmpFound.addAll(tmpSet);
 
 			tmpSet.clear();
 			foundSecondCorner = false;
@@ -243,10 +243,10 @@ public class Deadlock {
 				tmpP = new P(i, p.y);
 				if (s.boxes.contains(tmpP))
 					foundBoxes++;
-				
+
 				if (s.goals.contains(tmpP))
 					foundGoals++;
-				
+
 				if(s.walls.contains(new P(i,p.y + 1)) && !s.walls.contains(tmpP))
 					tmpSet.add(tmpP);
 				else
@@ -262,7 +262,7 @@ public class Deadlock {
 			if (foundSecondCorner && foundGoals < foundBoxes)
 				throw new InvalidMapException();
 			else if(foundGoals  == 0 && foundSecondCorner)
-				tmpFound.addAll(tmpSet); 
+				tmpFound.addAll(tmpSet);
 
 			tmpSet.clear();
 			foundSecondCorner = false;
@@ -272,13 +272,13 @@ public class Deadlock {
 			for(int i = p.y + 1; i < s.rows; i++)
 			{
 				tmpP = new P(p.x, i);
-				
+
 				if (s.boxes.contains(tmpP))
 					foundBoxes++;
-				
+
 				if (s.goals.contains(tmpP))
 					foundGoals++;
-				
+
 				if(s.walls.contains(new P(p.x - 1, i)) && !s.walls.contains(tmpP))
 					tmpSet.add(tmpP);
 				else
@@ -294,7 +294,7 @@ public class Deadlock {
 			if (foundSecondCorner && foundGoals < foundBoxes)
 				throw new InvalidMapException();
 			else if(foundGoals  == 0 && foundSecondCorner)
-				tmpFound.addAll(tmpSet); 
+				tmpFound.addAll(tmpSet);
 
 			tmpSet.clear();
 			foundSecondCorner = false;
@@ -306,10 +306,10 @@ public class Deadlock {
 				tmpP = new P(p.x, i);
 				if (s.boxes.contains(tmpP))
 					foundBoxes++;
-				
+
 				if (s.goals.contains(tmpP))
 					foundGoals++;
-				 
+
 				if(s.walls.contains(new P(p.x + 1, i)) && !s.walls.contains(tmpP))
 					tmpSet.add(tmpP);
 				else
@@ -325,7 +325,7 @@ public class Deadlock {
 			if (foundSecondCorner && foundGoals < foundBoxes)
 				throw new InvalidMapException();
 			else if(foundGoals  == 0 && foundSecondCorner)
-				tmpFound.addAll(tmpSet); 
+				tmpFound.addAll(tmpSet);
 
 			tmpSet.clear();
 			foundSecondCorner = false;
@@ -340,107 +340,97 @@ public class Deadlock {
 
 	public static boolean isDynamicDeadlocks(State s)
 	{
-		P position;
-		for(int i = 0 ; i < s.rows; i++)
-		{
-			for (int j = 0; j < s.columns; j++)
-			{
-				//Square box lock
-				position = new P(j,i);
-				if(s.boxes.contains(position)){
-					// Top left
-					P p1 = new P(position.x -1, position.y);
-					P p2 = new P(position.x - 1, position.y - 1);
-					P p3 = new P(position.x, position.y - 1);
-					if ((s.boxes.contains(p1) || s.walls.contains(p1)) && (s.boxes.contains(p2) || s.walls.contains(p2)) && (s.boxes.contains(p3) || s.walls.contains(p3)))
-						return true;
+		P position = s.boxMoved;
 
-					// Top right
-					p1 = new P(position.x, position.y - 1);
-					p2 = new P(position.x + 1, position.y - 1);
-					p3 = new P(position.x + 1 , position.y);
-					if ((s.boxes.contains(p1) || s.walls.contains(p1)) && (s.boxes.contains(p2) || s.walls.contains(p2)) && (s.boxes.contains(p3) || s.walls.contains(p3)))
-						return true;
+		// Top left
+		P p1 = new P(position.x -1, position.y);
+		P p2 = new P(position.x - 1, position.y - 1);
+		P p3 = new P(position.x, position.y - 1);
+		if ((s.boxes.contains(p1) || s.walls.contains(p1)) && (s.boxes.contains(p2) || s.walls.contains(p2)) && (s.boxes.contains(p3) || s.walls.contains(p3)))
+			return true;
 
-					// Bottom left
-					p1 = new P(position.x - 1, position.y);
-					p2 = new P(position.x -1, position.y + 1);
-					p3 = new P(position.x , position.y + 1);
-					if ((s.boxes.contains(p1) || s.walls.contains(p1)) && (s.boxes.contains(p2) || s.walls.contains(p2)) && (s.boxes.contains(p3) || s.walls.contains(p3)))
-						return true;
+		// Top right
+		p1 = new P(position.x, position.y - 1);
+		p2 = new P(position.x + 1, position.y - 1);
+		p3 = new P(position.x + 1 , position.y);
+		if ((s.boxes.contains(p1) || s.walls.contains(p1)) && (s.boxes.contains(p2) || s.walls.contains(p2)) && (s.boxes.contains(p3) || s.walls.contains(p3)))
+			return true;
 
-					// Bottom right
-					p1 = new P(position.x + 1, position.y);
-					p2 = new P(position.x + 1, position.y + 1);
-					p3 = new P(position.x , position.y + 1);
-					if ((s.boxes.contains(p1) || s.walls.contains(p1)) && (s.boxes.contains(p2) || s.walls.contains(p2)) && (s.boxes.contains(p3) || s.walls.contains(p3)))
-						return true;
+		// Bottom left
+		p1 = new P(position.x - 1, position.y);
+		p2 = new P(position.x -1, position.y + 1);
+		p3 = new P(position.x , position.y + 1);
+		if ((s.boxes.contains(p1) || s.walls.contains(p1)) && (s.boxes.contains(p2) || s.walls.contains(p2)) && (s.boxes.contains(p3) || s.walls.contains(p3)))
+			return true;
+
+		// Bottom right
+		p1 = new P(position.x + 1, position.y);
+		p2 = new P(position.x + 1, position.y + 1);
+		p3 = new P(position.x , position.y + 1);
+		if ((s.boxes.contains(p1) || s.walls.contains(p1)) && (s.boxes.contains(p2) || s.walls.contains(p2)) && (s.boxes.contains(p3) || s.walls.contains(p3)))
+			return true;
 
 
-					//Deadlock for two s.boxes adjacent to wall
+		//Deadlock for two s.boxes adjacent to wall
 
-					//All checks for walls over and under
-					//Pushed box is right, walls top
-					p1 = new P(position.x, position.y-1);
-					P w1 =  new P(position.x-1, position.y);
-					P w2 =  new P(position.x-1, position.y-1);
-					if((s.boxes.contains(p1)) && s.walls.contains(w1) && s.walls.contains(w2))
-						return true;
+		//All checks for walls over and under
+		//Pushed box is right, walls top
+		p1 = new P(position.x, position.y-1);
+		P w1 =  new P(position.x-1, position.y);
+		P w2 =  new P(position.x-1, position.y-1);
+		if((s.boxes.contains(p1)) && s.walls.contains(w1) && s.walls.contains(w2))
+			return true;
 
-					//Pushed box is left, walls top
-					p1 = new P(position.x, position.y+1);
-					w1 =  new P(position.x-1, position.y);
-					w2 =  new P(position.x-1, position.y+1);
-					if((s.boxes.contains(p1)) && s.walls.contains(w1) && s.walls.contains(w2))
-						return true;
+		//Pushed box is left, walls top
+		p1 = new P(position.x, position.y+1);
+		w1 =  new P(position.x-1, position.y);
+		w2 =  new P(position.x-1, position.y+1);
+		if((s.boxes.contains(p1)) && s.walls.contains(w1) && s.walls.contains(w2))
+			return true;
 
-					//Pushed box is left, walls bottom
-					p1 = new P(position.x, position.y+1);
-					w1 =  new P(position.x+1, position.y);
-					w2 =  new P(position.x+1, position.y+1);
-					if((s.boxes.contains(p1)) && s.walls.contains(w1) && s.walls.contains(w2))
-						return true;
+		//Pushed box is left, walls bottom
+		p1 = new P(position.x, position.y+1);
+		w1 =  new P(position.x+1, position.y);
+		w2 =  new P(position.x+1, position.y+1);
+		if((s.boxes.contains(p1)) && s.walls.contains(w1) && s.walls.contains(w2))
+			return true;
 
-					//Pushed box is right, walls bottom
-					p1 = new P(position.x, position.y-1);
-					w1 =  new P(position.x+1, position.y);
-					w2 =  new P(position.x+1, position.y-1);
-					if((s.boxes.contains(p1)) && s.walls.contains(w1) && s.walls.contains(w2))
-						return true;
+		//Pushed box is right, walls bottom
+		p1 = new P(position.x, position.y-1);
+		w1 =  new P(position.x+1, position.y);
+		w2 =  new P(position.x+1, position.y-1);
+		if((s.boxes.contains(p1)) && s.walls.contains(w1) && s.walls.contains(w2))
+			return true;
 
-					//All checks for walls right and left
-					//Pushed box is top, walls right
-					p1 = new P(position.x+1, position.y);
-					w1 =  new P(position.x, position.y+1);
-					w2 =  new P(position.x+1, position.y+1);
-					if((s.boxes.contains(p1)) && s.walls.contains(w1) && s.walls.contains(w2))
-						return true;
+		//All checks for walls right and left
+		//Pushed box is top, walls right
+		p1 = new P(position.x+1, position.y);
+		w1 =  new P(position.x, position.y+1);
+		w2 =  new P(position.x+1, position.y+1);
+		if((s.boxes.contains(p1)) && s.walls.contains(w1) && s.walls.contains(w2))
+			return true;
 
-					//Pushed box is bottom, walls right
-					p1 = new P(position.x-1, position.y);
-					w1 =  new P(position.x-1, position.y+1);
-					w2 =  new P(position.x, position.y+1);
-					if((s.boxes.contains(p1)) && s.walls.contains(w1) && s.walls.contains(w2))
-						return true;
+		//Pushed box is bottom, walls right
+		p1 = new P(position.x-1, position.y);
+		w1 =  new P(position.x-1, position.y+1);
+		w2 =  new P(position.x, position.y+1);
+		if((s.boxes.contains(p1)) && s.walls.contains(w1) && s.walls.contains(w2))
+			return true;
 
-					//Pushed box is top, walls left
-					p1 = new P(position.x+1, position.y);
-					w1 =  new P(position.x+1, position.y-1);
-					w2 =  new P(position.x, position.y-1);
-					if((s.boxes.contains(p1)) && s.walls.contains(w1) && s.walls.contains(w2))
-						return true;
+		//Pushed box is top, walls left
+		p1 = new P(position.x+1, position.y);
+		w1 =  new P(position.x+1, position.y-1);
+		w2 =  new P(position.x, position.y-1);
+		if((s.boxes.contains(p1)) && s.walls.contains(w1) && s.walls.contains(w2))
+			return true;
 
-					//Pushed box is bottom, walls left
-					p1 = new P(position.x-1, position.y);
-					w1 =  new P(position.x-1, position.y-1);
-					w2 =  new P(position.x, position.y-1);
-					if((s.boxes.contains(p1)) && s.walls.contains(w1) && s.walls.contains(w2))
-						return true;
-				}
+		//Pushed box is bottom, walls left
+		p1 = new P(position.x-1, position.y);
+		w1 =  new P(position.x-1, position.y-1);
+		w2 =  new P(position.x, position.y-1);
+		if((s.boxes.contains(p1)) && s.walls.contains(w1) && s.walls.contains(w2))
+			return true;
 
-
-			}
-		}
 		return false;
 	}
 }
