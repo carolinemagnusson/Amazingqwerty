@@ -59,12 +59,14 @@ public class DanielPlayer2
 
     HashMap<P, Queue<VectorNode>> vectorMap = new HashMap<P, Queue<VectorNode>>();
     Set<P> unsafePositions = new HashSet<P>();
+    int static_deadlock = 0;
+    int dynamic_deadlock = 0;
 
     private int h0(State s)
     {
     	int score = 0;
-    	if(vectorMapConstruction)
-    	{
+//    	if(vectorMapConstruction)
+//    	{
     		for(P goal : s.goals)
     		{
 				for(P box : s.boxes)
@@ -73,26 +75,26 @@ public class DanielPlayer2
 				}
     		}
     		return score;
-    	}
+//    	}
 ////    	for(P goal : s.goals)
 ////    	{
 ////    		if(s.boxes.contains(goal))
 ////    			score += 10;
 ////    	}
 
-		for(P box : s.boxes){
-			Queue<VectorNode> q = vectorMap.get(box);
-			if(q.isEmpty()){//Deadlock check of static deadlocks
-				score += Integer.MAX_VALUE;
-			}
-			score += q.peek().distanceWalked;
-			//TODO If we have time and energy: check that the heuristic is not for distance to goal with box on it.
-//			for(VectorNode node : q){
-//				if(node.goal.)
+//		for(P box : s.boxes){
+//			Queue<VectorNode> q = vectorMap.get(box);
+//			if(q.isEmpty()){//Deadlock check of static deadlocks
+//				score += Integer.MAX_VALUE;
 //			}
-		}
+//			score += q.peek().distanceWalked;
+//			//TODO If we have time and energy: check that the heuristic is not for distance to goal with box on it.
+////			for(VectorNode node : q){
+////				if(node.goal.)
+////			}
+//		}
 
-    	return score;
+//    	return score;
     }
     //TODO Copy paste the hashmap to make a reverse search between init state of boxes and goals.
     private int ReverseH0(State s)
@@ -231,8 +233,8 @@ public class DanielPlayer2
 //				if(expanded >= limit - 50)
 //					pn.print();
 //
-//				if(expanded % 10001 == 0)
-//					pn.print();
+				if(expanded % 10001 == 0)
+					pn.print();
 
 				if(pn.state.isWin())
 				{
@@ -286,15 +288,17 @@ public class DanielPlayer2
 
 					if(unsafePositions.contains(cs.boxMoved))
 					{
-						System.err.println("Static Deadlock Detected");
-						cs.Print();
+						//System.err.println("Static Deadlock Detected");
+						//cs.Print();
+						static_deadlock++;
 						continue;
 					}
 
 					if(Deadlock.isDynamicDeadlocks(cs))
 					{
-						System.err.println("Dynamic Deadlock Detected");
-						cs.Print();
+						//System.err.println("Dynamic Deadlock Detected");
+						//cs.Print();
+						dynamic_deadlock++;
 						continue;
 					}
 
@@ -330,8 +334,8 @@ public class DanielPlayer2
 //				if(expanded >= limit - 50)
 //					pn.print();
 
-//				if(expanded % 10002 == 0)
-//					pn.print();
+				if(expanded % 10002 == 0)
+					pn.print();
 
 				if(pn.state.isWin(startState))
 				{
