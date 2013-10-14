@@ -1,15 +1,24 @@
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.PriorityQueue;
+import java.util.Queue;
+import java.util.Stack;
 
 class VectorNode implements Comparable<VectorNode>
 {
 	int distance;
 	P goal;
+	int distanceWalked;
 
 	@Override
 	public int compareTo(VectorNode vectorNode)
 	{
-		if(distance < vectorNode.distance) return -1;
-		if(distance > vectorNode.distance) return +1;
+		if(distance < vectorNode.distance) 
+			return -1;
+		if(distance > vectorNode.distance) 
+			return +1;
 		return 0;
 	}
 }
@@ -74,7 +83,7 @@ public class DanielPlayer2
 			if(q.isEmpty()){//Deadlock check of static deadlocks
 				score += Integer.MAX_VALUE;
 			}
-			score += q.peek().distance;
+			score += q.peek().distanceWalked;
 			//TODO If we have time and energy: check that the heuristic is not for distance to goal with box on it.
 //			for(VectorNode node : q){
 //				if(node.goal.)
@@ -207,7 +216,7 @@ public class DanielPlayer2
 			}
 
 			{
-				N pn = (N)queue.poll(); //parent node
+				N pn = queue.poll(); //parent node
 				expanded++;
 				//pn.print();
 
@@ -291,7 +300,7 @@ public class DanielPlayer2
 			}
 
 			{
-				N pn = (N)reverseQueue.poll(); //parent node
+				N pn = reverseQueue.poll(); //parent node
 				//N pn = (N)stack.pop();
 				expanded++;
 				//pn.print();
@@ -394,95 +403,111 @@ public class DanielPlayer2
 	public void play(State startState)
 	{
 
-//		State empty = startState.copyState();
-//		empty.boxes.clear();
-//		empty.goals.clear();
-//		LinkedList<P> reachables = new LinkedList<P>();
-//		HashSet<P> bfvisited = new HashSet<P>();
-//		Queue<P> queuebf = new LinkedList<P>();
-//		queuebf.add(empty.player);
-//
-//		while(!queuebf.isEmpty())
-//		{
-//			P playerCurrent = queuebf.poll();
-//			bfvisited.add(playerCurrent);
-//
-//			for(P direction : adjacent_lrud)
-//			{
-//				P playerNext = new P(playerCurrent.x + direction.x, playerCurrent.y + direction.y);
-//
-//				if(empty.walls.contains(playerNext))
-//					continue;
-//				if(bfvisited.contains(playerNext))
-//					continue;
-//
-//				reachables.add(playerNext);
-//				queuebf.add(playerNext);
-//			}
-//		}
-//
-//		for(P box : reachables)
-//		{
-//			Queue thisBoxQueue = new PriorityQueue<VectorNode>();
-//
-//			for(P goal : startState.goals)
-//			{
-//				//solve simplified sub problem
-//				State subState = empty.copyState();
-//				subState.boxes.add(box);
-//				subState.goals.add(goal);
-//
+		State empty = startState.copyState();
+		empty.boxes.clear();
+		empty.goals.clear();
+		LinkedList<P> reachables = new LinkedList<P>();
+		HashSet<P> bfvisited = new HashSet<P>();
+		Queue<P> queuebf = new LinkedList<P>();
+		queuebf.add(empty.player);
+
+		while(!queuebf.isEmpty())
+		{
+			P playerCurrent = queuebf.poll();
+			bfvisited.add(playerCurrent);
+
+			for(P direction : adjacent_lrud)
+			{
+				P playerNext = new P(playerCurrent.x + direction.x, playerCurrent.y + direction.y);
+
+				if(empty.walls.contains(playerNext))
+					continue;
+				if(bfvisited.contains(playerNext))
+					continue;
+
+				reachables.add(playerNext);
+				queuebf.add(playerNext);
+			}
+		}
+
+		for(P box : reachables)
+		{
+			Queue<VectorNode> thisBoxQueue = new PriorityQueue<VectorNode>();
+
+			for(P goal : startState.goals)
+			{
+				//solve simplified sub problem
+				State subState = empty.copyState();
+				subState.boxes.add(box);
+				subState.goals.add(goal);
+
 //				String answer = SearchSolution(subState);
 //
 //				if(answer == null)
 //					continue;
-//
-//				Queue<VectorNode> queuebfs = new PriorityQueue<VectorNode>();
-//				bfvisited.clear();
-//				VectorNode goalNode = null;
-//				VectorNode node;
-//				VectorNode firstNode = new VectorNode();
-//				firstNode.distance = State.ManhattanDistance(box, goal);
-//				firstNode.goal = box;
-//				queuebfs.add(firstNode);
-//
-//				while(!queuebfs.isEmpty())
-//				{
-//					//OBS! vectornode goal is where you are currently
-//					VectorNode next = queuebfs.poll();
-//					bfvisited.add(next.goal);
-//
-//					if(next.goal.equals(goal))
-//					{
-//						goalNode = next;
-//					}
-//
-//					for(P direction : adjacent_lrud)
-//					{
-//						P nextPosition = new P(next.goal.x + direction.x, next.goal.y + direction.y);
-//
-//						if(empty.walls.contains(nextPosition))
-//							continue;
-//						if(bfvisited.contains(nextPosition))
-//							continue;
-//
-//						VectorNode child = new VectorNode();
-//						child.distance = State.ManhattanDistance(nextPosition, goal);
-//						child.goal = nextPosition;
-//						queuebfs.add(child);
-//					}
-//				}
-//
-//				if(goalNode != null)
-//					thisBoxQueue.add(goalNode);
-//			}
-//
-//			vectorMap.put(box, thisBoxQueue);
-//		}
 
+				Queue<VectorNode> queuebfs = new PriorityQueue<VectorNode>();
+				bfvisited.clear();
+				VectorNode goalNode = null;
+				VectorNode firstNode = new VectorNode();
+				firstNode.distance = State.ManhattanDistance(box, goal);
+				firstNode.goal = box;
+				firstNode.distanceWalked = 0;
+				queuebfs.add(firstNode);
 
-		System.err.println(SearchSolution(startState));
-		System.err.println("State.hashCollissionCounter: " + State.hashCollissionCounter);
+				while(!queuebfs.isEmpty())
+				{
+					//OBS! vectornode goal is where you are currently
+					VectorNode next = queuebfs.poll();
+					bfvisited.add(next.goal);
+
+					if(next.goal.equals(goal))
+					{
+						goalNode = next;
+					}
+
+					for(P direction : adjacent_lrud)
+					{
+						P nextPosition = new P(next.goal.x + direction.x, next.goal.y + direction.y);
+
+						if(empty.walls.contains(nextPosition))
+							continue;
+						if(bfvisited.contains(nextPosition))
+							continue;
+
+						VectorNode child = new VectorNode();
+						child.distance = State.ManhattanDistance(nextPosition, goal);
+						child.goal = nextPosition;
+						child.distanceWalked = next.distanceWalked +1;
+						queuebfs.add(child);
+					}
+				}
+
+				if(goalNode != null){
+					VectorNode nodeForMap = new VectorNode();
+					nodeForMap.goal = goal;
+					nodeForMap.distance = goalNode.distanceWalked;
+					thisBoxQueue.add(nodeForMap);
+				}
+			}
+
+			vectorMap.put(box, thisBoxQueue);
+		}
+
+		System.err.println("Check vectorMap:");
+		System.err.println("Size of vectormap for this pos: " + vectorMap.get(new P(4, 3)).size());
+		PriorityQueue<VectorNode> pq = (PriorityQueue<VectorNode>)vectorMap.get(new P(4, 3));
+		
+		for (VectorNode v : pq) {
+			System.err.println("This goal x, y: " + v.goal.x + " " + v.goal.y + " distance: " + v.distance);
+		}
+		System.err.println(startState.goals.size());
+		vectorMapConstruction = false;
+		
+		
+		
+//		System.err.println(SearchSolution(startState));
+//		System.err.println("State.hashCollissionCounter: " + State.hashCollissionCounter);
 	}
 
 	private class GreedyDFSBoxNode
@@ -555,15 +580,55 @@ public class DanielPlayer2
 
 	public static void main(String args[])
 	{
-		DanielPlayer2 player = new DanielPlayer2();
-		State slc_state1 = MapsSLC.LoadMap(1);
-		System.err.println("rows: " + slc_state1.rows + " columns: " + slc_state1.columns);
-		long start = System.currentTimeMillis();
-
-		player.play(slc_state1);
-
-		long end = System.currentTimeMillis();
-		long elapsed = end - start;
-		System.err.println("elapsed time(ms): " + elapsed);
+		PriorityQueue<VectorNode> test = new PriorityQueue<VectorNode>();
+		{
+		VectorNode v = new VectorNode();
+		v.distance = 3;
+		v.goal = new P(3,4 );
+		test.add(v);
+		}
+		{
+			VectorNode v = new VectorNode();
+			v.distance = 7;
+			v.goal = new P(3,4 );
+			test.add(v);
+			}
+		{
+			VectorNode v = new VectorNode();
+			v.distance = 4;
+			v.goal = new P(3,4 );
+			test.add(v);
+			}
+		{
+			VectorNode v = new VectorNode();
+			v.distance = 5;
+			v.goal = new P(3,4 );
+			test.add(v);
+			}
+		{
+			VectorNode v = new VectorNode();
+			v.distance = 4;
+			v.goal = new P(3,4 );
+			test.add(v);
+			}
+		{
+			VectorNode v = new VectorNode();
+			v.distance = 4;
+			v.goal = new P(3,4 );
+			test.add(v);
+			}
+		for(VectorNode v: test){
+			System.err.println(v.distance);
+		}
+//		DanielPlayer2 player = new DanielPlayer2();
+//		State slc_state1 = MapsSLC.LoadMap(1);
+//		System.err.println("rows: " + slc_state1.rows + " columns: " + slc_state1.columns);
+//		long start = System.currentTimeMillis();
+//
+//		player.play(slc_state1);
+//
+//		long end = System.currentTimeMillis();
+//		long elapsed = end - start;
+//		System.err.println("elapsed time(ms): " + elapsed);
 	}
 }
