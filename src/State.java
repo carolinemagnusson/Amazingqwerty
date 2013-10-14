@@ -52,6 +52,7 @@ public class State
 	public Set<P> boxes = new HashSet<P>();
 	private static Set<P> visited = new HashSet<P>();
 	public static int hashCollissionCounter = 0;
+	public P boxMoved; //This is the new position of the box that was moved. OBS! Only for forward search
 
 	public State()
 	{
@@ -113,32 +114,6 @@ public class State
 		return newState;
 	}
 
-	/*
-	public void PossibleBasic(Collection<State> c)
-	{
-		//todo check if adjacent_lrud cells are pushable
-	}
-
-	public boolean CanPush(P p, P d)
-	{
-		//p player position
-		//d player push direction
-		P pushed = new P(p.x + d.x, p.y + d.y);
-		P behindPushed = new P(p.x + d.x*2, p.y + d.y*2);
-
-		if(walls.contains(pushed))
-			return false;
-		if(boxes.contains(pushed))
-		{
-			if(walls.contains(behindPushed))
-				return false;
-			if(boxes.contains(behindPushed))
-				return false;
-		}
-		return true;
-	}
-	 */
-
 	public static int ManhattanDistance(P a, P b)
 	{
 		return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
@@ -152,23 +127,16 @@ public class State
 	}
 	private boolean GreedyDFS(N parentNode, int depth)
 	{
-		//returns true if a path was found
-		//returns false if no path was found
-
-		//dont revisit positions
+		//returns true if a path was found returns false if no path was found, dont revisit positions
 		{
 			if(visited.contains(parentNode.pA))
 				return false;
 
 			visited.add(parentNode.pA);
 		}
-
-		//System.err.println("Greedy DFS depth:" + depth + " p:" + pn.p.x + "," + pn.p.y + " b:" + pn.b.x + "," + pn.b.y);
-
 		//simple case
 		if(parentNode.pA.x == parentNode.PB.x && parentNode.pA.y == parentNode.PB.y)
 		{
-			//System.err.println("greedy path found");
 			return true;
 		}
 
@@ -323,6 +291,7 @@ public class State
 		}
 		player = pushed;
 		updateUnsafePositions();
+		boxMoved = behindPushed;
 	}
 
 	public void pull(P p, P d)
@@ -773,7 +742,6 @@ public class State
 			return true;
 		}
 
-		//return player.x == s.player.x && player.y == s.player.y;
 		return false;
 	}
 
@@ -786,10 +754,6 @@ public class State
 			hash += box.x * 5234544;
 			hash += box.y * 6463553;
 		}
-
-		//dont hash the player, a check will be performed in equals()
-		//hash += player.x * 1000000;
-		//hash += player.y * 4000000;
 		return hash;
 	}
 
@@ -825,7 +789,6 @@ public class State
 
 					endState.player = adjacentPosition;
 					list.add(endState);
-					//endState.Print();
 				}
 			}
 		}
