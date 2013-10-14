@@ -403,7 +403,7 @@ public class DanielPlayer2
 		System.err.println("queue size: " + queue.size());
 		System.err.println("reverse queue size: " + reverseQueue.size());
 		System.err.println("expanded nodes: " + expanded);
-
+		System.err.println("deadlocks detected static:" + static_deadlock + " dynamic:" + dynamic_deadlock);
 		/*
 		while(queue.size() != 0)
 		{
