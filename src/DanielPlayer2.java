@@ -286,14 +286,15 @@ public class DanielPlayer2
 					if(visited.containsKey(cs))
 						continue;
 
-					if(unsafePositions.contains(cs.boxMoved))
-					{
-						//System.err.println("Static Deadlock Detected");
-						//cs.Print();
-						static_deadlock++;
-						continue;
-					}
+//					if(unsafePositions.contains(cs.boxMoved))
+//					{
+//						//System.err.println("Static Deadlock Detected");
+//						//cs.Print();
+//						static_deadlock++;
+//						continue;
+//					}
 
+					/*
 					if(Deadlock.isDynamicDeadlocks(cs))
 					{
 						//System.err.println("Dynamic Deadlock Detected");
@@ -301,6 +302,7 @@ public class DanielPlayer2
 						dynamic_deadlock++;
 						continue;
 					}
+					*/
 
 					N cn = new N();
 					cn.state = cs;
@@ -412,7 +414,7 @@ public class DanielPlayer2
 		}
 		*/
 
-		if(queue.size() == 0 && reverseQueue.size() == 0)
+		if(queue.size() == 0 || reverseQueue.size() == 0)
 		{
 			return null; //no solution found
 		}
@@ -527,14 +529,27 @@ public class DanielPlayer2
 
 		try
 		{
-			unsafePositions = Deadlock.staticDeadlocks(startState);
+			//unsafePositions = Deadlock.staticDeadlocks(startState);
 		}
 		catch(Exception ex)
 		{
-			System.err.println(ex);
+			//System.err.println(ex);
+			//System.out.println("no path");
 		}
 
-		System.err.println(SearchSolution(startState));
+		String solution_answer = SearchSolution(startState);
+
+		if(solution_answer == null)
+			throw new ArrayIndexOutOfBoundsException("roowoo");
+		else
+		{
+			for(int i=0; i<solution_answer.length(); i++)
+			{
+				System.out.print(solution_answer.charAt(i) + " ");
+			}
+			System.out.println();
+		}
+
 		System.err.println("State.hashCollissionCounter: " + State.hashCollissionCounter);
 	}
 
