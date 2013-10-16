@@ -4,8 +4,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
 import java.util.Queue;
+import java.util.Set;
 import java.util.Stack;
-import java.util.*;
 
 class VectorNode implements Comparable<VectorNode>
 {
@@ -147,17 +147,20 @@ public class DanielPlayer2
     	}
 
     	N from = null;
-
+    	int counter =0;
     	for(N sequential : list)
     	{
     		sequential.print();
-
-    		if(from != null)
+    		if(from != null) //TODO maybe need to make sure that the last step is not included if that is no box push
     		{
-    			String pathstring = State.getPath2(from.state, sequential.state);
-    			System.err.println(pathstring);
-				answer.append(pathstring);
+    				String pathstring = State.getPath2(from.state, sequential.state);
+    				System.err.println(pathstring);
+    				answer.append(pathstring);
+
+    			
     		}
+    		++counter;
+    		
 
     		from = sequential;
     	}
@@ -221,20 +224,10 @@ public class DanielPlayer2
 
 			{
 				N pn = queue.poll(); //parent node
+				System.err.println("Forward search:");
+				pn.state.Print();
+				visited.put(pn.state, pn);
 				expanded++;
-				//pn.print();
-
-				if(expanded >= limit)
-				{
-					System.err.println("broke the limit. limit is " + limit);
-					break;
-				}
-
-//				if(expanded >= limit - 50)
-//					pn.print();
-//
-				if(expanded % 10001 == 0)
-					pn.print();
 
 				if(pn.state.isWin())
 				{
@@ -262,7 +255,7 @@ public class DanielPlayer2
 			    		}
 
 			    		from = sequential;
-			    		sequential.print();
+//			    		sequential.print();
 			    	}
 					break;
 				}
@@ -285,16 +278,17 @@ public class DanielPlayer2
 				{
 					if(visited.containsKey(cs))
 						continue;
-
-//					if(unsafePositions.contains(cs.boxMoved))
-//					{
-//						//System.err.println("Static Deadlock Detected");
-//						//cs.Print();
-//						static_deadlock++;
-//						continue;
-//					}
-
+					
+					if(unsafePositions.contains(cs.boxMoved))
+					{
+						//System.err.println("Static Deadlock Detected");
+						//cs.Print();
+						static_deadlock++;
+						continue;
+					}
+					
 					/*
+					
 					if(Deadlock.isDynamicDeadlocks(cs))
 					{
 						//System.err.println("Dynamic Deadlock Detected");
@@ -303,7 +297,7 @@ public class DanielPlayer2
 						continue;
 					}
 					*/
-
+					
 					N cn = new N();
 					cn.state = cs;
 					cn.parent = pn;
@@ -324,20 +318,10 @@ public class DanielPlayer2
 			{
 				N pn = reverseQueue.poll(); //parent node
 				//N pn = (N)stack.pop();
+				System.err.println("Backward search:");
+				pn.state.Print();
+				reverseVisited.put(pn.state, pn);
 				expanded++;
-				//pn.print();
-
-//				if(expanded >= limit)
-//				{
-//					System.err.println("broke the limit. limit is " + limit);
-//					break;
-//				}
-
-//				if(expanded >= limit - 50)
-//					pn.print();
-
-				if(expanded % 10002 == 0)
-					pn.print();
 
 				if(pn.state.isWin(startState))
 				{
@@ -414,10 +398,6 @@ public class DanielPlayer2
 		}
 		*/
 
-		if(queue.size() == 0 || reverseQueue.size() == 0)
-		{
-			return null; //no solution found
-		}
 
 		return answer.toString();
     }
@@ -529,11 +509,11 @@ public class DanielPlayer2
 
 		try
 		{
-			//unsafePositions = Deadlock.staticDeadlocks(startState);
+			unsafePositions = Deadlock.staticDeadlocks(startState);
 		}
 		catch(Exception ex)
 		{
-			//System.err.println(ex);
+//			System.err.println(ex);
 			//System.out.println("no path");
 		}
 
@@ -621,81 +601,81 @@ public class DanielPlayer2
     	}
     }
 
-	public static void main(String args[])
-	{
-//		LinkedList<VectorNode> test = new LinkedList<VectorNode>();
-//		System.err.println("next test");
-//		VectorNode[] array = test.toArray(new VectorNode[0]);
-//		Arrays.sort(array);
+//	public static void main(String args[])
+//	{
+////		LinkedList<VectorNode> test = new LinkedList<VectorNode>();
+////		System.err.println("next test");
+////		VectorNode[] array = test.toArray(new VectorNode[0]);
+////		Arrays.sort(array);
+////
+////		for(VectorNode v: array){
+////			System.err.println(v.distance);
+////		}
+////		{
+////			VectorNode v = new VectorNode();
+////			v.distance = 3;
+////			v.goal = new P(3,4 );
+////			test.add(v);
+////		}
+////		System.err.println("next test");
+////		for(VectorNode v: test){
+////			System.err.println(v.distance);
+////		}
+////		{
+////			VectorNode v = new VectorNode();
+////			v.distance = 7;
+////			v.goal = new P(3,4 );
+////			test.add(v);
+////		}
+////		System.err.println("next test");
+////		for(VectorNode v: test){
+////			System.err.println(v.distance);
+////		}
+////		{
+////			VectorNode v = new VectorNode();
+////			v.distance = 4;
+////			v.goal = new P(3,4 );
+////			test.add(v);
+////		}
+////		System.err.println("next test");
+////		for(VectorNode v: test){
+////			System.err.println(v.distance);
+////		}
+////		{
+////			VectorNode v = new VectorNode();
+////			v.distance = 5;
+////			v.goal = new P(3,4 );
+////			test.add(v);
+////		}
+////		System.err.println("next test");
+////		for(VectorNode v: test){
+////			System.err.println(v.distance);
+////		}
+////		{
+////			VectorNode v = new VectorNode();
+////			v.distance = 4;
+////			v.goal = new P(3,4 );
+////			test.add(v);
+////		}
+////		System.err.println("next test");
+////		for(VectorNode v: array){
+////			System.err.println(v.distance);
+////		}
+////		{
+////			VectorNode v = new VectorNode();
+////			v.distance = 4;
+////			v.goal = new P(3,4 );
+////			test.add(v);
+////		}
+//		DanielPlayer2 player = new DanielPlayer2();
+//		State slc_state1 = MapsSLC.LoadMap(1);
+//		System.err.println("rows: " + slc_state1.rows + " columns: " + slc_state1.columns);
+//		long start = System.currentTimeMillis();
 //
-//		for(VectorNode v: array){
-//			System.err.println(v.distance);
-//		}
-//		{
-//			VectorNode v = new VectorNode();
-//			v.distance = 3;
-//			v.goal = new P(3,4 );
-//			test.add(v);
-//		}
-//		System.err.println("next test");
-//		for(VectorNode v: test){
-//			System.err.println(v.distance);
-//		}
-//		{
-//			VectorNode v = new VectorNode();
-//			v.distance = 7;
-//			v.goal = new P(3,4 );
-//			test.add(v);
-//		}
-//		System.err.println("next test");
-//		for(VectorNode v: test){
-//			System.err.println(v.distance);
-//		}
-//		{
-//			VectorNode v = new VectorNode();
-//			v.distance = 4;
-//			v.goal = new P(3,4 );
-//			test.add(v);
-//		}
-//		System.err.println("next test");
-//		for(VectorNode v: test){
-//			System.err.println(v.distance);
-//		}
-//		{
-//			VectorNode v = new VectorNode();
-//			v.distance = 5;
-//			v.goal = new P(3,4 );
-//			test.add(v);
-//		}
-//		System.err.println("next test");
-//		for(VectorNode v: test){
-//			System.err.println(v.distance);
-//		}
-//		{
-//			VectorNode v = new VectorNode();
-//			v.distance = 4;
-//			v.goal = new P(3,4 );
-//			test.add(v);
-//		}
-//		System.err.println("next test");
-//		for(VectorNode v: array){
-//			System.err.println(v.distance);
-//		}
-//		{
-//			VectorNode v = new VectorNode();
-//			v.distance = 4;
-//			v.goal = new P(3,4 );
-//			test.add(v);
-//		}
-		DanielPlayer2 player = new DanielPlayer2();
-		State slc_state1 = MapsSLC.LoadMap(1);
-		System.err.println("rows: " + slc_state1.rows + " columns: " + slc_state1.columns);
-		long start = System.currentTimeMillis();
-
-		player.play(slc_state1);
-
-		long end = System.currentTimeMillis();
-		long elapsed = end - start;
-		System.err.println("elapsed time(ms): " + elapsed);
-	}
+//		player.play(slc_state1);
+//
+//		long end = System.currentTimeMillis();
+//		long elapsed = end - start;
+//		System.err.println("elapsed time(ms): " + elapsed);
+//	}
 }

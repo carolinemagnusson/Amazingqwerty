@@ -1,15 +1,16 @@
-import java.util.*;
-import java.io.*;
+import java.io.File;
+import java.util.LinkedList;
+import java.util.Scanner;
 
 public class MapsSLC
 {
-	public LinkedList<GameState> Maps;
+	public LinkedList<State> Maps;
 
 	public MapsSLC()
 	{
 		try
 		{
-			Maps = new LinkedList<GameState>();
+			Maps = new LinkedList<State>();
 			File file = new File("all-slc/test_file.txt");
 			file.createNewFile();
 			File slcFile = new File("all-slc/all.slc");
@@ -51,7 +52,7 @@ public class MapsSLC
 					}
 
 					//finish map
-					GameState map = new GameState(data);
+					State map = new State(data);
 					Maps.add(map);
 					ia++;
 					list.clear();
