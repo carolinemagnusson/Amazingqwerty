@@ -1,4 +1,3 @@
-package old;
 
 public class Position {
 	public int row;

@@ -3,35 +3,35 @@ import java.util.Set;
 
 
 public class Deadlock {
-//	public static void main(String args[])
-//	{
-//		State s = null;
-//		for(int i = 1; i < 121;i++){
-//			s = StateLoader.LoadState(i);
-//			//System.err.println("SLC MAP # "+i);
-//			//System.err.println("rows: " + s.rows + " columns: " + s.columns);
-//			//s.Print();
-////			try {
-////				// = Deadlock.staticDeadlocks(s);
-////			} catch (InvalidMapException e) {
-////				System.out.println("MAP " + i + " is invalid map" );
-////			}
-//			Deadlock.printUnsafePositions(s);
-//			System.out.println("Map: " + i + " is deadlock " + Deadlock.isDynamicDeadlocks(s));
+	public static void main(String args[])
+	{
+		State s = null;
+		for(int i = 1; i < 121;i++){
+			s = StateLoader.LoadState(i);
+			//System.err.println("SLC MAP # "+i);
+			//System.err.println("rows: " + s.rows + " columns: " + s.columns);
+			//s.Print();
+//			try {
+//				// = Deadlock.staticDeadlocks(s);
+//			} catch (InvalidMapException e) {
+//				System.out.println("MAP " + i + " is invalid map" );
+//			}
+			Deadlock.printUnsafePositions(s);
+			System.out.println("Map: " + i + " is deadlock " + Deadlock.isDynamicDeadlocks(s));
+		}
+//		clearState(slc_state);
+		s.Print();
+
+//		try
+//		{
+//		//s.unsafePositions = staticDeadlocks(s);
+//		} catch (InvalidMapException e)
+//		{
+//			System.err.println("INVALID MAP");
 //		}
-////		clearState(slc_state);
-//		s.Print();
-//
-////		try
-////		{
-////		//s.unsafePositions = staticDeadlocks(s);
-////		} catch (InvalidMapException e)
-////		{
-////			System.err.println("INVALID MAP");
-////		}
-//		printUnsafePositions(s);
-//
-//	}
+		printUnsafePositions(s);
+
+	}
 	private static void clearState(State s)
 	{
 		s.walls = new HashSet<P>();

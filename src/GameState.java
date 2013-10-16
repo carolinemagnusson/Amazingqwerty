@@ -1,4 +1,3 @@
-package old;
 import java.util.Vector;
 import java.util.Collection;
 

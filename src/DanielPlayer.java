@@ -1,4 +1,3 @@
-package old;
 import java.util.*;
 
 public class DanielPlayer extends AbstractPlayer

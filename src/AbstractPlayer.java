@@ -1,4 +1,3 @@
-package old;
 
 abstract public class AbstractPlayer {
 	//TODO Define a player. Put AI here.
