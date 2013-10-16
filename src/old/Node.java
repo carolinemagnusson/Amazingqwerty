@@ -1,3 +1,4 @@
+package old;
 public class Node implements Comparable<Node>{
 	GameState state;
 	Node parent;
