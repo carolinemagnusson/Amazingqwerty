@@ -278,7 +278,7 @@ public class DanielPlayer2
 				{
 					if(visited.containsKey(cs))
 						continue;
-					/*
+					
 					if(unsafePositions.contains(cs.boxMoved))
 					{
 						//System.err.println("Static Deadlock Detected");
@@ -296,7 +296,7 @@ public class DanielPlayer2
 						dynamic_deadlock++;
 						continue;
 					}
-					*/
+					
 					
 					N cn = new N();
 					cn.state = cs;
@@ -509,7 +509,7 @@ public class DanielPlayer2
 
 		try
 		{
-//			unsafePositions = Deadlock.staticDeadlocks(startState);
+			unsafePositions = Deadlock.staticDeadlocks(startState);
 		}
 		catch(Exception ex)
 		{

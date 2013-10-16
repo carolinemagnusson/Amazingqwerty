@@ -341,7 +341,10 @@ public class Deadlock {
 	public static boolean isDynamicDeadlocks(State s)
 	{
 		P position = s.boxMoved;
-
+		
+		//if pushed box is now on a goal this is not a deadlock
+		if (s.boxes.contains(position) && s.goals.contains(position))
+			return false;
 		// Top left
 		P p1 = new P(position.x -1, position.y);
 		P p2 = new P(position.x - 1, position.y - 1);
