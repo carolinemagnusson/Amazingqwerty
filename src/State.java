@@ -52,7 +52,8 @@ public class State
 	private static Set<P> visited = new HashSet<P>();
 	public static int hashCollissionCounter = 0;
 	public P boxMoved; //This is the new position of the box that was moved. OBS! Only for forward search
-
+	private P leftUpperP;
+	
 	public State()
 	{
 	}
@@ -95,6 +96,7 @@ public class State
 				//else empty
 			}
 		}
+		setLeftUpperPosition();
 
 	}
 
@@ -108,6 +110,7 @@ public class State
 		newState.player = this.player;
 		newState.rows = this.rows;
 		newState.columns = this.columns;
+		setLeftUpperPosition();
 		return newState;
 	}
 
@@ -288,6 +291,7 @@ public class State
 		}
 		player = pushed;
 		boxMoved = behindPushed;
+		setLeftUpperPosition();
 	}
 
 	public void pull(P p, P d)
@@ -301,6 +305,7 @@ public class State
 		boxes.remove(box);
 		boxes.add(adjacent);
 		player = p;
+		setLeftUpperPosition();
 	}
 
 	//TODO player has to move to the position next to the box
@@ -467,23 +472,7 @@ public class State
 		return true;
 	}
 
-	public void test()
-	{
-		//for(P box : boxes)
-		{
-			N n = new N();
-			n.pA = player;
-			n.PB = new P(4, 7);
-			n.s = 0;
 
-			System.err.println("px:" + n.pA.x + " py:"+ n.pA.y + " bx:" + n.PB.x + " by:" + n.PB.y);
-			//System.err.println(GreedyDFS(n, player));
-			Collection<State> c = new LinkedList<State>(); //collection
-			PossibleBox(c, n.PB);
-			for(State s : c)
-				s.Print();
-		}
-	}
 
 	@Override
 	public boolean equals(Object b){
@@ -497,9 +486,15 @@ public class State
 		}
 
 		//if all the boxes have the same position and the player can find a path to the other player in the other "reality" then the state of the "realitys" must be the same
-		if(GreedyDFSWrapper(s.player, this.player)){
-			return true;
+//		if(GreedyDFSWrapper(s.player, this.player)){
+//			return true;
+//		}
+		if(leftUpperP==null){
+			setLeftUpperPosition();
 		}
+		
+		if(this.leftUpperP.x == s.leftUpperP.x && this.leftUpperP.y == s.leftUpperP.y)
+			return true;
 
 		return false;
 	}
@@ -513,9 +508,45 @@ public class State
 			hash += box.x * 5234544;
 			hash += box.y * 6463553;
 		}
+		if(leftUpperP==null){
+			setLeftUpperPosition();
+		}
+//		hash+= leftUpperP.x*153;
+//		hash+= leftUpperP.y*2642;
 		return hash;
 	}
 
+	public void setLeftUpperPosition(){
+		// P.x is column and P.y is row
+		Queue<P> queue = new LinkedList<P>();
+		HashSet<P> visited = new HashSet<>();
+		P startPos = this.player;
+		P tempLeftMost = new P(columns, rows); // find smaller rows and columns,
+												// in first hand smaller columns
+												// (smaller x)
+		queue.add(startPos);
+
+		while (!queue.isEmpty()) {
+			P next = queue.poll();
+			visited.add(next);
+			if (tempLeftMost.x > next.x) {
+				tempLeftMost = new P(next.x, next.y);
+
+			} else if (tempLeftMost.x == next.x) {
+				if (tempLeftMost.y > next.y) {
+					tempLeftMost = new P(next.x, next.y);
+				}
+			}
+		}
+		System.err.println("set new leftupper");
+		System.err.println(leftUpperP==null ? "isnull":"notnull");
+		if(leftUpperP == null){
+			leftUpperP = new P(0,0);
+		}
+		leftUpperP.x = tempLeftMost.x;
+		leftUpperP.y = tempLeftMost.y;
+	}
+//	
 	public boolean isWin(State desiredState)
 	{
 		//check that all boxes and player in current state is equivalent to the desired state
