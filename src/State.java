@@ -511,8 +511,8 @@ public class State
 		if(leftUpperP==null){
 			setLeftUpperPosition();
 		}
-//		hash+= leftUpperP.x*153;
-//		hash+= leftUpperP.y*2642;
+		hash+= leftUpperP.x*153;
+		hash+= leftUpperP.y*2642;
 		return hash;
 	}
 
@@ -537,9 +537,22 @@ public class State
 					tempLeftMost = new P(next.x, next.y);
 				}
 			}
+			for (P a : adjacent_lrud) {
+				P nextPos = new P(next.x + a.x, next.y + a.y);
+				if(visited.contains(nextPos)){
+					continue;
+				}
+				if (walls.contains(nextPos)) {
+					continue;
+				}
+				if (boxes.contains(nextPos)) {
+					continue;
+				}
+				queue.add(nextPos);
+
+			}
+
 		}
-		System.err.println("set new leftupper");
-		System.err.println(leftUpperP==null ? "isnull":"notnull");
 		if(leftUpperP == null){
 			leftUpperP = new P(0,0);
 		}

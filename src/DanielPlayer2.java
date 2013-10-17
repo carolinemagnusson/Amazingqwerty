@@ -601,81 +601,17 @@ public class DanielPlayer2
     	}
     }
 
-//	public static void main(String args[])
-//	{
-////		LinkedList<VectorNode> test = new LinkedList<VectorNode>();
-////		System.err.println("next test");
-////		VectorNode[] array = test.toArray(new VectorNode[0]);
-////		Arrays.sort(array);
-////
-////		for(VectorNode v: array){
-////			System.err.println(v.distance);
-////		}
-////		{
-////			VectorNode v = new VectorNode();
-////			v.distance = 3;
-////			v.goal = new P(3,4 );
-////			test.add(v);
-////		}
-////		System.err.println("next test");
-////		for(VectorNode v: test){
-////			System.err.println(v.distance);
-////		}
-////		{
-////			VectorNode v = new VectorNode();
-////			v.distance = 7;
-////			v.goal = new P(3,4 );
-////			test.add(v);
-////		}
-////		System.err.println("next test");
-////		for(VectorNode v: test){
-////			System.err.println(v.distance);
-////		}
-////		{
-////			VectorNode v = new VectorNode();
-////			v.distance = 4;
-////			v.goal = new P(3,4 );
-////			test.add(v);
-////		}
-////		System.err.println("next test");
-////		for(VectorNode v: test){
-////			System.err.println(v.distance);
-////		}
-////		{
-////			VectorNode v = new VectorNode();
-////			v.distance = 5;
-////			v.goal = new P(3,4 );
-////			test.add(v);
-////		}
-////		System.err.println("next test");
-////		for(VectorNode v: test){
-////			System.err.println(v.distance);
-////		}
-////		{
-////			VectorNode v = new VectorNode();
-////			v.distance = 4;
-////			v.goal = new P(3,4 );
-////			test.add(v);
-////		}
-////		System.err.println("next test");
-////		for(VectorNode v: array){
-////			System.err.println(v.distance);
-////		}
-////		{
-////			VectorNode v = new VectorNode();
-////			v.distance = 4;
-////			v.goal = new P(3,4 );
-////			test.add(v);
-////		}
-//		DanielPlayer2 player = new DanielPlayer2();
-//		State slc_state1 = MapsSLC.LoadMap(1);
-//		System.err.println("rows: " + slc_state1.rows + " columns: " + slc_state1.columns);
-//		long start = System.currentTimeMillis();
-//
-//		player.play(slc_state1);
-//
-//		long end = System.currentTimeMillis();
-//		long elapsed = end - start;
-//		System.err.println("elapsed time(ms): " + elapsed);
-//	}
+	public static void main(String args[])
+	{
+		DanielPlayer2 player = new DanielPlayer2();
+		State slc_state1 = MapsSLC.LoadMap(1);
+		System.err.println("rows: " + slc_state1.rows + " columns: " + slc_state1.columns);
+		long start = System.currentTimeMillis();
+
+		player.play(slc_state1);
+
+		long end = System.currentTimeMillis();
+		long elapsed = end - start;
+		System.err.println("elapsed time(ms): " + elapsed);
+	}
 }
